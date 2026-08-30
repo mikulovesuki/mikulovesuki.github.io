@@ -1,0 +1,79 @@
+---
+title: 从零实现 QR 迭代特征值算法
+description: 不调用现成例程，用 Julia 实现带位移的 QR 迭代法、幂法与反幂法，并在对称/上三角/含重根矩阵上与主流实现对比验证。
+pubDate: 2026-07-06
+tags: ['Julia', '数值计算', '线性代数']
+draft: false
+---
+
+## 问题定义
+
+对 $n \times n$ 方阵 $A$，特征值问题要求满足
+
+$$A\mathbf{x} = \lambda \mathbf{x}$$
+
+的标量 $\lambda$ 与非零向量 $\mathbf{x}$。它是结构动力学、振动分析、PCA、PageRank 的共同核心。
+
+大多数时候我们调用 `eigvals` 就完事了。但"从零实现"的意义在于：**理解算法为什么收敛、误差从哪来、边界情况如何处理**。
+
+## 三种算法与适用场景
+
+| 方法 | 求解目标 | 核心思想 |
+| --- | --- | --- |
+| QR 迭代法 | 全部特征值 | 反复做 $A_k - \mu I = Q_k R_k$，$A_{k+1} = R_k Q_k + \mu I$，收敛到（拟）上三角，读对角块 |
+| 幂法 | 模最大特征值 | 迭代 $\mathbf{x} \leftarrow A\mathbf{x} / \|A\mathbf{x}\|$，用瑞利商估计 $\lambda$ |
+| 反幂法 | 模最小特征值 | 对 $A$ 做一次 LU 分解，迭代求解 $A\mathbf{y} = \mathbf{x}$，收敛到 $A^{-1}$ 的主特征值 |
+
+## 带位移的 QR 迭代
+
+朴素 QR 迭代收敛很慢。加上**位移（shift）**加速：取 $A_k$ 右下角元素作位移 $\mu_k$，做
+
+$$\begin{aligned} A_k - \mu_k I &= Q_k R_k \\ A_{k+1} &= R_k Q_k + \mu_k I \end{aligned}$$
+
+当次对角元 $|a_{i,i-1}|$ 小于阈值时，将其置零并**收缩子块**——之后只在更小的活动子块上迭代。末端 $2 \times 2$ 块用二次公式求根得到实特征值。
+
+```julia
+function qr_method(A::Matrix{Float64}; tol=1e-12, maxiter=500)
+    n = size(A, 1)
+    m = n          # 活动子块大小
+    Ak = copy(A)
+    V = Matrix{Float64}(I, n, n)  # 累积正交变换
+    for iter in 1:maxiter
+        m <= 1 && break
+        mu = Ak[m, m]              # 简单位移：右下角元素
+        F = qr(Ak[1:m, 1:m] .- mu * I)
+        Ak[1:m, 1:m] = F.R * F.Q .+ mu * I
+        V[:, 1:m] = V[:, 1:m] * F.Q
+        # 次对角元置零判定 + 子块收缩
+        for i in m:-1:2
+            if abs(Ak[i, i-1]) <= tol * (abs(Ak[i-1, i-1]) + abs(Ak[i, i]))
+                Ak[i, i-1] = 0.0
+                if i == m
+                    m -= 1
+                end
+            end
+        end
+    end
+    return diag(Ak), V
+end
+```
+
+## 验证结果
+
+以 `LinearAlgebra.eigvals` 为参考，三类测试矩阵：$3 \times 3$ 对称（特征值 $1,2,4$）、$4 \times 4$ 上三角（$1,2,3,4$）、$3 \times 3$ 含重根（$1,1,4$）：
+
+| 方法 | 最大相对误差 |
+| --- | --- |
+| QR 迭代法（全部特征值） | $\sim 10^{-8}$ |
+| 幂法（主特征值） | $\sim 10^{-8}$ |
+| 反幂法（最小模特征值） | $\sim 10^{-9}$ |
+
+特征向量残差 $\|A\mathbf{x} - \lambda \mathbf{x}\|$ 均在 $10^{-10}$ 量级。
+
+## 值得注意的坑
+
+1. **重根矩阵**：QR 迭代对含重根矩阵也能正确处理（次对角元置零判定天然处理了收敛块）；
+2. **幂法的失效条件**：矩阵若有多个模相同的主特征值，幂法不收敛；
+3. **反幂法的优势**：只需要极端特征值时，一次 LU 分解 + 迭代比全套 QR 便宜得多。
+
+完整的算法推导、实现与数值验证在仓库的 LaTeX 报告中：[matrix-eigenvalue-methods](https://github.com/mikulovesuki/matrix-eigenvalue-methods)

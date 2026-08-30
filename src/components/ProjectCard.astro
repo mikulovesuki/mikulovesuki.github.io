@@ -1,0 +1,81 @@
+---
+import type { FeaturedProject } from '../data/projects';
+
+interface Props {
+  project: FeaturedProject;
+  /** GitHub 实时数据（构建时拉取，可能为空） */
+  starCount?: number;
+  updatedAt?: string;
+}
+
+const { project, starCount = 0, updatedAt } = Astro.props;
+
+const isAi = project.category === 'ai';
+const accent = isAi ? 'text-(--color-accent-2)' : 'text-(--color-accent)';
+const badge = isAi ? 'AI 应用' : '数值计算';
+const url = `https://github.com/mikulovesuki/${project.repo}`;
+---
+
+<article class="group flex flex-col rounded-xl border border-(--color-border) bg-(--color-panel) p-6 transition-all hover:-translate-y-1 hover:border-(--color-accent)/60 hover:shadow-lg hover:shadow-(--color-accent)/5">
+  <div class="flex items-start justify-between gap-3">
+    <h3 class="font-mono text-lg font-semibold text-(--color-ink) transition-colors group-hover:text-(--color-accent)">
+      {project.name}
+    </h3>
+    <span class:list={['shrink-0 rounded-full border px-2.5 py-0.5 text-xs', isAi ? 'border-(--color-accent-2)/40 text-(--color-accent-2)' : 'border-(--color-accent)/40 text-(--color-accent)']}>
+      {badge}
+    </span>
+  </div>
+
+  <p class:list={['mt-1 text-sm', accent]}>
+    {project.tagline}
+  </p>
+  <p class="mt-3 flex-1 text-sm leading-6 text-(--color-ink-dim)">
+    {project.description}
+  </p>
+
+  <ul class="mt-4 space-y-1.5">
+    {
+      project.highlights.slice(0, 3).map((h) => (
+        <li class="flex gap-2 text-xs leading-5 text-(--color-ink-dim)">
+          <span class:list={['mt-0.5 flex-none', accent]}>▸</span>
+          <span>{h}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="mt-4 flex flex-wrap gap-1.5">
+    {
+      project.tech.map((t) => (
+        <span class="rounded bg-(--color-code-bg) px-2 py-0.5 font-mono text-[11px] text-(--color-ink-dim)">
+          {t}
+        </span>
+      ))
+    }
+  </div>
+
+  <div class="mt-5 flex items-center justify-between border-t border-(--color-border) pt-4 text-xs text-(--color-ink-faint)">
+    <span>{project.period}</span>
+    <span class="flex items-center gap-3">
+      {
+        starCount > 0 && (
+          <span class="flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+            {starCount}
+          </span>
+        )
+      }
+      {updatedAt && <span>更新 {updatedAt}</span>}
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-mono text-(--color-accent) transition-opacity hover:opacity-75"
+      >
+        github ↗
+      </a>
+    </span>
+  </div>
+</article>

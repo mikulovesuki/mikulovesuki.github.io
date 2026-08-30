@@ -1,0 +1,22 @@
+---
+import { SITE } from '../config';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-(--color-border) bg-(--color-bg-soft)">
+  <div class="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-sm text-(--color-ink-faint) sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <p>
+      <span class="font-mono text-(--color-ink-dim)">© {year} {SITE.title}</span>
+      <span class="mx-2">·</span>
+      <span class="font-serif italic">从公式到工程</span>
+    </p>
+    <p class="font-mono text-xs">
+      <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-(--color-accent)">
+        github.com/mikulovesuki
+      </a>
+      <span class="mx-2">·</span>
+      <span>built with Astro</span>
+    </p>
+  </div>
+</footer>

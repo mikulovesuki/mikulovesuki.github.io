@@ -1,0 +1,60 @@
+---
+import { timeline, type TimelineItem } from '../data/timeline';
+
+const tagColor: Record<string, string> = {
+  learning: 'border-(--color-accent-3)/40 text-(--color-accent-3)',
+  competition: 'border-(--color-accent-2)/40 text-(--color-accent-2)',
+  project: 'border-(--color-accent)/40 text-(--color-accent)',
+};
+
+const tagLabel: Record<string, string> = {
+  learning: '学习',
+  competition: '参赛',
+  project: '项目',
+};
+---
+
+<ol class="relative ml-3 border-l border-(--color-border) pl-6">
+  {
+    timeline.map((item: TimelineItem) => (
+      <li class="relative pb-10 last:pb-0">
+        <!-- 时间线节点 -->
+        <span class="absolute -left-[31px] top-1.5 h-2.5 w-2.5 rounded-full bg-(--color-accent) ring-4 ring-(--color-bg)"></span>
+
+        <p class="font-mono text-xs text-(--color-ink-faint)">
+          {item.period}
+          <span
+            class:list={[
+              'ml-2 rounded-full border px-2 py-0.5 text-[10px]',
+              tagColor[item.tag ?? 'learning'],
+            ]}
+          >
+            {tagLabel[item.tag ?? 'learning']}
+          </span>
+        </p>
+        <h4 class="mt-1.5 font-serif text-base font-semibold text-(--color-ink)">
+          {item.title}
+        </h4>
+        <p class="mt-1.5 text-sm leading-6 text-(--color-ink-dim)">
+          {item.description}
+        </p>
+        {
+          item.repos && item.repos.length > 0 && (
+            <p class="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-(--color-ink-faint)">
+              {item.repos.map((r) => (
+                <a
+                  href={`https://github.com/mikulovesuki/${r}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="transition-colors hover:text-(--color-accent)"
+                >
+                  {r}
+                </a>
+              ))}
+            </p>
+          )
+        }
+      </li>
+    ))
+  }
+</ol>

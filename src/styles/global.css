@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+@theme {
+  --color-bg: #0a0e14;
+  --color-bg-soft: #0f1520;
+  --color-panel: #131a26;
+  --color-border: #1e2a3a;
+  --color-ink: #d7e0ea;
+  --color-ink-dim: #8fa1b3;
+  --color-ink-faint: #5a6b7e;
+  --color-accent: #4fd1c5;
+  --color-accent-2: #a78bfa;
+  --color-accent-3: #f472b6;
+  --color-code-bg: #0d1219;
+
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 数学公式在暗色主题下的可读性 */
+.katex {
+  color: var(--color-ink);
+}
+
+::selection {
+  background-color: rgba(79, 209, 197, 0.25);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-faint);
+}
+
+/* 终端打字机光标 */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.typing-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+/* 公式背景缓慢漂移 */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(2deg); }
+}
+
+.formula-float {
+  animation: float-slow 9s ease-in-out infinite;
+}
+
+/* 淡入 */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fade-up 0.7s ease-out both;
+}
+
+/* 博客正文排版 */
+.prose-blog {
+  line-height: 1.85;
+  font-size: 1.05rem;
+  color: var(--color-ink);
+}
+
+.prose-blog h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1rem;
+  color: #fff;
+  border-left: 3px solid var(--color-accent);
+  padding-left: 0.75rem;
+}
+
+.prose-blog h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem;
+  color: #fff;
+}
+
+.prose-blog p {
+  margin: 1rem 0;
+}
+
+.prose-blog a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-blog code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+}
+
+.prose-blog pre {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.prose-blog pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.prose-blog blockquote {
+  border-left: 3px solid var(--color-accent-2);
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--color-ink-dim);
+}
+
+.prose-blog ul,
+.prose-blog ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose-blog ul {
+  list-style: disc;
+}
+
+.prose-blog ol {
+  list-style: decimal;
+}
+
+.prose-blog li {
+  margin: 0.35rem 0;
+}
+
+.prose-blog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.prose-blog th,
+.prose-blog td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose-blog th {
+  background: var(--color-panel);
+  font-weight: 600;
+}
+
+.prose-blog img {
+  border-radius: 8px;
+  margin: 1.5rem auto;
+}

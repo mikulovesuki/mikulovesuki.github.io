@@ -1,0 +1,69 @@
+---
+title: 用 MCP 给文本 LLM 装上眼睛
+description: 记录 mimo-vision-mcp 的设计：文本模型负责调度、视觉模型负责看，MCP 把两者接起来，图片数据本身不经过文本模型。
+pubDate: 2026-08-24
+tags: ['MCP', 'LLM', 'Python', 'AI 应用']
+draft: false
+---
+
+## 背景：文本模型"看不见"的问题
+
+在 opencode 里用文本模型（如 Claude/GPT 系列的非多模态版本）时，最大的限制是：**它看不见图片**。截图、设计稿、论文里的图表，对纯文本模型来说是一团不可描述的数据。
+
+解决思路有两种：
+
+1. 换多模态模型 —— 成本高、部分场景不可用；
+2. **把视觉能力做成工具**：文本模型通过 MCP 调用外部视觉模型，由视觉模型"看图"并把结果以文本返回。
+
+mimo-vision-mcp 选择了第二种方案，核心原则是：**图片数据本身不经过文本模型**。
+
+## 架构
+
+```
+用户给图片路径/URL
+  → ① 文本 LLM 根据工具列表 + 调用指引，决定调用 analyze_image
+  → ② opencode / 任意 MCP 客户端（stdio）
+  → ③ mimo-vision MCP server（图片归一化 + 转发请求）
+  → ④ 视觉模型（MiMo-V2.5 等）真正"看"图
+  → ⑤ 文本结果原路返回，文本模型转述给用户
+```
+
+文本模型是"调度员"，视觉模型是"眼睛"，MCP 是两者之间的接口协议。
+
+## 三个工具
+
+| 工具 | 说明 |
+| --- | --- |
+| `analyze_image(images, prompt)` | 通用图片问答，支持多图 |
+| `describe_image(images)` | 详细描述图片内容 |
+| `extract_text_from_image(images)` | 提取图中文字（OCR） |
+
+`images` 每项支持本地绝对路径、公网 URL、base64 data URI 或纯 base64 字符串，server 端统一做归一化与 MIME 探测。
+
+## 关键设计决策
+
+### 1. 协议自动适配
+
+不同视觉模型走不同的 API 协议：`gpt-*` / `grok-*` 系列走 OpenAI 的 Responses API，其余走 chat/completions。server 在配置里自动判断，也可强制指定——这样换模型不需要改代码。
+
+### 2. 零命令行门槛是"能用"的前提
+
+很多 MCP server 的 README 都写着"pip install ..."，对新手劝退。这个项目做了一个 `start-webui.bat`：双击自动创建 `.env`、装依赖、起服务、开浏览器。WebUI 里选模型、传图片、点预览测试，选择即同步到 CLI 配置，无需重启。
+
+### 3. 失败要友好
+
+没配 API key 返回明确的错误提示而不是堆栈；图片格式不支持给出具体原因；还有超时配置的坑（`experimental.mcp_timeout` 至少要 120s，否则视觉请求会超时）——这些都在 README 的常见问题里写清楚了。
+
+## 工程细节
+
+- **配置热加载**：`.env` 每次调用实时重读，改 key 或模型不用重启 server；
+- **CI**：GitHub Actions 跑单元测试（图片归一化、协议适配、错误路径）；
+- **附带 `AGENTS.md`**：通过 `"instructions"` 注入会话，让文本模型遇到图片时主动调用工具。
+
+## 收获
+
+1. **MCP 是"能力外包"的标准接口**：把视觉当工具而不是换模型，让"昂贵能力"按需调用；
+2. **工具设计要为调度者服务**：AGENTS.md 调用指引、友好的错误信息，都是让文本模型（和它的人类用户）少踩坑；
+3. **新手体验决定了项目传播度**：一键启动脚本带来的是"1 分钟上手"，而不是"先装 Python"。
+
+仓库：[github.com/mikulovesuki/mimo-vision-mcp](https://github.com/mikulovesuki/mimo-vision-mcp)

@@ -1,0 +1,114 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import RepoCard from '../components/RepoCard.astro';
+import { projects, projectsByCategory } from '../data/projects';
+import { excludedRepos, repoNotes, fallbackGroup } from '../data/repoNotes';
+import { fetchRepos, originalRepos, type GithubRepo } from '../lib/github';
+import { SITE } from '../config';
+
+// 构建时同步 GitHub API；失败（或触发 API rate limit）时降级为仅静态精选数据
+const repos = await fetchRepos();
+const repoList = repos ? originalRepos(repos).filter((r) => !excludedRepos.has(r.name)) : [];
+const repoMap = new Map(repoList.map((r) => [r.name, r]));
+
+const starOf = (name: string) => repoMap.get(name)?.stargazers_count ?? 0;
+const updatedOf = (name: string) => repoMap.get(name)?.pushed_at.slice(0, 10);
+
+// 学习记录 / 竞赛材料类仓库（非精选，来自 GitHub API + 中文笔记兜底）
+const noteRepos: { repo: GithubRepo; note: string; title?: string }[] = repoList
+  .filter((r) => !projects.some((p) => p.repo === r.name))
+  .map((r) => {
+    const meta = repoNotes[r.name] ?? fallbackGroup(r.name);
+    const note = meta.description;
+    return { repo: r, note, title: meta.title };
+  });
+
+const competitionRepos = noteRepos.filter((n) => {
+  const meta = repoNotes[n.repo.name];
+  return meta && meta.group === 'competition';
+});
+const studyRepos = noteRepos.filter((n) => {
+  const meta = repoNotes[n.repo.name];
+  return !meta || meta.group === 'notes';
+});
+
+const apiAvailable = repos !== null;
+---
+
+<BaseLayout title="项目">
+  <div class="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+    <header class="mb-12">
+      <p class="font-mono text-xs text-(--color-accent)">## projects</p>
+      <h1 class="mt-2 font-serif text-3xl font-bold text-white">项目</h1>
+      <p class="mt-3 max-w-2xl text-sm leading-6 text-(--color-ink-dim)">
+        原创项目分两类：
+        <span class="text-(--color-accent-2)">AI 应用开发</span>（把大模型能力落地成可用系统）与
+        <span class="text-(--color-accent)">数值计算</span>（从算法原理出发自己实现并验证）。
+        数据在构建时从 GitHub API 同步 {apiAvailable ? '，包含实时 star 与更新时间' : '（本次构建未连上 GitHub API，展示的是内置缓存数据）'}。
+      </p>
+    </header>
+
+    <!-- AI 应用 -->
+    <section class="mb-14">
+      <div class="mb-6 flex items-center gap-3">
+        <span class="h-px flex-1 bg-(--color-border)"></span>
+        <h2 class="font-mono text-sm font-semibold text-(--color-accent-2)">
+          AI 应用开发 <span class="text-(--color-ink-faint)">· {projectsByCategory('ai').length} 个</span>
+        </h2>
+        <span class="h-px flex-1 bg-(--color-border)"></span>
+      </div>
+      <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {projectsByCategory('ai').map((p) => (
+          <ProjectCard project={p} starCount={starOf(p.repo)} updatedAt={updatedOf(p.repo)} />
+        ))}
+      </div>
+    </section>
+
+    <!-- 数值计算 -->
+    <section class="mb-14">
+      <div class="mb-6 flex items-center gap-3">
+        <span class="h-px flex-1 bg-(--color-border)"></span>
+        <h2 class="font-mono text-sm font-semibold text-(--color-accent)">
+          数值计算 <span class="text-(--color-ink-faint)">· {projectsByCategory('numerical').length} 个</span>
+        </h2>
+        <span class="h-px flex-1 bg-(--color-border)"></span>
+      </div>
+      <div class="grid gap-5 md:grid-cols-2">
+        {projectsByCategory('numerical').map((p) => (
+          <ProjectCard project={p} starCount={starOf(p.repo)} updatedAt={updatedOf(p.repo)} />
+        ))}
+      </div>
+    </section>
+
+    <!-- 竞赛与学习记录 -->
+    {
+      (competitionRepos.length > 0 || studyRepos.length > 0) && (
+        <>
+          {competitionRepos.length > 0 && (
+            <section class="mb-14">
+              <div class="mb-6 flex items-center gap-3">
+                <span class="h-px flex-1 bg-(--color-border)"></span>
+                <h2 class="font-mono text-sm font-semibold text-(--color-accent-3)">
+                  竞赛与学习记录 <span class="text-(--color-ink-faint)">· {competitionRepos.length + studyRepos.length} 个</span>
+                </h2>
+                <span class="h-px flex-1 bg-(--color-border)"></span>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[...competitionRepos, ...studyRepos].map((n) => (
+                  <RepoCard repo={n.repo} note={n.note} title={n.title} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )
+    }
+
+    <p class="mt-4 text-center font-mono text-xs text-(--color-ink-faint)">
+      <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-(--color-accent)">
+        在 GitHub 上查看全部 →
+      </a>
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,45 @@
+---
+import { skillGroups } from '../data/skills';
+
+const groupAccent: Record<string, string> = {
+  ai: 'text-(--color-accent-2)',
+  numerical: 'text-(--color-accent)',
+  academic: 'text-(--color-accent-3)',
+};
+
+const groupBorder: Record<string, string> = {
+  ai: 'border-(--color-accent-2)/40',
+  numerical: 'border-(--color-accent)/40',
+  academic: 'border-(--color-accent-3)/40',
+};
+---
+
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {
+    skillGroups.map((group) => (
+      <section class="rounded-xl border border-(--color-border) bg-(--color-panel) p-5">
+        <h3 class:list={['font-mono text-sm font-semibold', groupAccent[group.id]]}>
+          <span class="font-serif text-base">「</span>
+          {group.title}
+          <span class="font-serif text-base">」</span>
+        </h3>
+        <p class="mt-1 text-xs text-(--color-ink-faint)">{group.desc}</p>
+        <div class="mt-4 flex flex-wrap gap-1.5">
+          {
+            group.skills.map((s) => (
+              <span
+                class:list={[
+                  'rounded-full border px-2.5 py-1 text-xs transition-colors hover:bg-(--color-code-bg)',
+                  groupBorder[group.id],
+                  'text-(--color-ink-dim) hover:text-(--color-ink)',
+                ]}
+              >
+                {s}
+              </span>
+            ))
+          }
+        </div>
+      </section>
+    ))
+  }
+</div>

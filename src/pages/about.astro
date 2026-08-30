@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SkillCloud from '../components/SkillCloud.astro';
+import Timeline from '../components/Timeline.astro';
+import { SITE } from '../config';
+---
+
+<BaseLayout title="关于">
+  <div class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+    <header class="mb-12">
+      <p class="font-mono text-xs text-(--color-accent)">## about</p>
+      <h1 class="mt-2 font-serif text-3xl font-bold text-white">关于我</h1>
+    </header>
+
+    <!-- 简介 -->
+    <section class="mb-14 rounded-xl border border-(--color-border) bg-(--color-panel) p-7">
+      <p class="leading-7 text-(--color-ink)">
+        <span class="font-serif text-2xl text-(--color-accent)">oblivion</span>
+        ，广东工业大学学生，主攻
+        <span class="text-(--color-accent-2)">AI 应用开发</span>与
+        <span class="text-(--color-accent)">数值计算</span>两个方向。
+      </p>
+      <p class="mt-4 leading-7 text-(--color-ink-dim)">
+        我习惯把学习过程落到可验证的产出上：数值算法要给出相对误差量级，AI 应用要带测试与 CI，
+        论文写完要能编译成 PDF。做过的项目横跨
+        MCP 协议、RAG 混合检索、多 Agent 编排、Julia 数值线性代数、Modelica 动力学仿真与 LaTeX 学术写作——
+        从公式推导到系统工程都愿意亲手做一遍。
+      </p>
+      <p class="mt-4 leading-7 text-(--color-ink-dim)">
+        这个网站记录我的项目与学习笔记。欢迎通过 GitHub 交流。
+      </p>
+    </section>
+
+    <!-- 技能 -->
+    <section class="mb-14">
+      <h2 class="mb-5 font-serif text-xl font-bold text-white">技能栈</h2>
+      <SkillCloud />
+    </section>
+
+    <!-- 时间线 -->
+    <section class="mb-14">
+      <h2 class="mb-5 font-serif text-xl font-bold text-white">经历时间线</h2>
+      <Timeline />
+    </section>
+
+    <!-- 联系方式 -->
+    <section class="rounded-xl border border-(--color-border) bg-(--color-panel) p-7">
+      <h2 class="mb-4 font-serif text-xl font-bold text-white">联系我</h2>
+      <div class="flex flex-col gap-3 font-mono text-sm">
+        <a
+          href={SITE.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-2 text-(--color-ink-dim) transition-colors hover:text-(--color-accent)"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.73.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.2.67.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+          </svg>
+          github.com/mikulovesuki
+        </a>
+        {
+          SITE.email && (
+            <a
+              href={`mailto:${SITE.email}`}
+              class="flex items-center gap-2 text-(--color-ink-dim) transition-colors hover:text-(--color-accent)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              {SITE.email}
+            </a>
+          )
+        }
+      </div>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,56 @@
+---
+import type { GithubRepo } from '../lib/github';
+
+interface Props {
+  repo: GithubRepo;
+  note: string;
+  title?: string;
+}
+
+const { repo, note, title } = Astro.props;
+
+const languageColor: Record<string, string> = {
+  Python: '#3572A5',
+  TeX: '#3D6117',
+  Julia: '#a270ba',
+  'Wolfram Language': '#DD1100',
+  Jupyter: '#DA5B0B',
+  'C++': '#f34b7d',
+};
+const langColor = languageColor[repo.language ?? ''] ?? '#8fa1b3';
+const name = title ?? repo.name;
+const updated = repo.pushed_at.slice(0, 10);
+---
+
+<div class="rounded-lg border border-(--color-border) bg-(--color-panel) p-4 transition-colors hover:border-(--color-accent)/50">
+  <div class="flex items-center justify-between gap-2">
+    <a
+      href={repo.html_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="min-w-0 truncate font-mono text-sm font-semibold text-(--color-ink) transition-colors hover:text-(--color-accent)"
+    >
+      {name}
+    </a>
+    <span class="flex flex-none items-center gap-1 font-mono text-[11px] text-(--color-ink-faint)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+      </svg>
+      {repo.stargazers_count}
+    </span>
+  </div>
+  <p class="mt-2 line-clamp-3 text-xs leading-5 text-(--color-ink-dim)">
+    {note}
+  </p>
+  <div class="mt-3 flex items-center justify-between font-mono text-[11px] text-(--color-ink-faint)">
+    <span class="flex items-center gap-1.5">
+      {repo.language && (
+        <>
+          <span class="h-2.5 w-2.5 rounded-full" style={`background-color: ${langColor}`}></span>
+          <span>{repo.language}</span>
+        </>
+      )}
+    </span>
+    <span>{updated}</span>
+  </div>
+</div>
