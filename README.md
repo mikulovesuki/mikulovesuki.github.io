@@ -23,6 +23,13 @@
 
 ```bash
 npm install        # 安装依赖
+```
+
+双击 `start.bat` 一键启动（自动打开浏览器 http://localhost:4321），双击 `stop.bat` 一键关闭；
+
+或使用命令行：
+
+```bash
 npm run dev        # 开发服务器 http://localhost:4321
 npm run check      # TypeScript 类型检查
 npm run build      # 生产构建 → dist/
