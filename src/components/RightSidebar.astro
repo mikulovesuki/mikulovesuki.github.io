@@ -1,0 +1,184 @@
+---
+import { getCollection } from 'astro:content';
+import { getMergedProjects } from '../lib/site-data';
+import { SITE } from '../config';
+import { profile } from '../data/profile';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const recentPosts = posts.slice(0, 5);
+const projectCount = getMergedProjects().length;
+
+const fmt = new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' });
+
+const tagCounts = new Map<string, number>();
+for (const p of posts) for (const t of p.data.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+---
+
+<!-- 作者卡 -->
+<div class="mb-4 rounded-xl border border-(--color-border) bg-(--color-panel) p-5 text-center shadow-sm transition-shadow hover:shadow-md">
+  <img
+    src="/img/mascot-chibi.jpg"
+    alt="Q 版头像"
+    width="96"
+    height="99"
+    loading="lazy"
+    class="mx-auto h-20 w-20 rounded-2xl object-cover object-[50%_18%] shadow-md"
+  />
+  <p class="mt-3 font-serif text-base font-bold text-(--color-ink)">{profile.name}</p>
+  <p class="mt-1 text-xs leading-5 text-(--color-ink-dim)">{profile.headline}</p>
+  {
+    profile.status && (
+      <p class="mt-2 inline-block rounded-full border border-(--color-accent)/40 px-2.5 py-0.5 text-[11px] text-(--color-accent)">
+        {profile.status}
+      </p>
+    )
+  }
+  <div class="mt-4 grid grid-cols-2 divide-x divide-(--color-border) rounded-lg bg-(--color-bg-soft) py-2 font-mono text-xs">
+    <div>
+      <p class="text-sm font-semibold text-(--color-ink)">{posts.length}</p>
+      <p class="mt-0.5 text-[10px] text-(--color-ink-faint)">博客</p>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-(--color-ink)">{projectCount}</p>
+      <p class="mt-0.5 text-[10px] text-(--color-ink-faint)">项目</p>
+    </div>
+  </div>
+  <a
+    href={SITE.github}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="mt-4 flex items-center justify-center gap-2 rounded-lg bg-(--color-accent) py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+  >
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.73.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.2.67.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+    </svg>
+    Follow Me
+  </a>
+</div>
+
+<!-- 公告卡 -->
+<div class="mb-4 rounded-xl border border-(--color-border) bg-(--color-panel) px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+  <div class="mb-3 flex items-center gap-2 font-mono text-xs font-semibold text-(--color-ink)">
+    <span class="inline-block h-2 w-2 rounded-sm bg-(--color-accent)"></span>
+    公告
+  </div>
+  <p class="text-xs leading-6 text-(--color-ink-dim)">
+    把算法写成公式，把公式跑成代码。此站在 GitHub push 后约 1–2 分钟自动更新。
+  </p>
+</div>
+
+<!-- 最新文章卡 -->
+{
+  recentPosts.length > 0 && (
+    <div class="mb-4 rounded-xl border border-(--color-border) bg-(--color-panel) px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+      <div class="mb-3 flex items-center gap-2 font-mono text-xs font-semibold text-(--color-ink)">
+        <span class="inline-block h-2 w-2 rounded-sm bg-(--color-accent)"></span>
+        最新文章
+      </div>
+      <ul class="space-y-3">
+        {recentPosts.map((post) => (
+          <li>
+            <a href={`/blog/${post.id}/`} class="group block">
+              <p class="text-xs font-medium leading-5 text-(--color-ink) transition-colors group-hover:text-(--color-accent)">
+                {post.data.title}
+              </p>
+              <p class="mt-0.5 font-mono text-[10px] text-(--color-ink-faint)">
+                {fmt.format(post.data.pubDate)}
+              </p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<!-- 标签云卡 -->
+{
+  tags.length > 0 && (
+    <div class="mb-4 rounded-xl border border-(--color-border) bg-(--color-panel) px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+      <div class="mb-3 flex items-center gap-2 font-mono text-xs font-semibold text-(--color-ink)">
+        <span class="inline-block h-2 w-2 rounded-sm bg-(--color-accent)"></span>
+        标签
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        {tags.map(([tag, count]) => (
+          <a
+            href="/blog/"
+            class="rounded bg-(--color-code-bg) px-2 py-0.5 font-mono text-[11px] text-(--color-ink-dim) transition-colors hover:bg-(--color-accent)/10 hover:text-(--color-accent)"
+          >
+            #{tag}<sup class="text-[9px]">{count}</sup>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<!-- 目录卡（JS 扫描当前页标题生成，无标题时隐藏） -->
+<div id="sidebar-toc" hidden>
+  <div class="mb-4 rounded-xl border border-(--color-border) bg-(--color-panel) px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+    <div class="mb-3 flex items-center gap-2 font-mono text-xs font-semibold text-(--color-ink)">
+      <span class="inline-block h-2 w-2 rounded-sm bg-(--color-accent)"></span>
+      目录
+    </div>
+    <nav id="sidebar-toc-list" class="toc-scroll max-h-[52vh] space-y-1 overflow-y-auto"></nav>
+  </div>
+</div>
+
+<script>
+  // 扫描主内容区的 h2/h3 生成目录，并高亮当前阅读位置
+  const tocBox = document.getElementById('sidebar-toc');
+  const tocList = document.getElementById('sidebar-toc-list');
+  const main = document.querySelector('main');
+  if (tocBox && tocList && main) {
+    const headings = Array.from(main.querySelectorAll('h2, h3')).filter(
+      (h) => h.textContent.trim().length > 0 && !h.closest('#sidebar-toc'),
+    ) as HTMLElement[];
+    if (headings.length > 0) {
+      const links: { el: HTMLElement; li: HTMLElement }[] = [];
+      let lastTop: HTMLElement | null = null;
+      const topLevel = document.createElement('ul');
+      topLevel.className = 'space-y-1';
+      tocList.appendChild(topLevel);
+      headings.forEach((h, i) => {
+        if (!h.id) h.id = 'sec-' + i;
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.trim();
+        a.className =
+          'block text-xs leading-snug transition-colors text-(--color-ink-dim) hover:text-(--color-accent)';
+        if (h.tagName === 'H3') {
+          a.classList.add('pl-3', 'text-[11px]', 'text-(--color-ink-faint)');
+        }
+        li.appendChild(a);
+        if (h.tagName === 'H2') {
+          lastTop = li;
+          topLevel.appendChild(li);
+        } else {
+          (lastTop?.querySelector('ul') || topLevel).appendChild(li);
+        }
+        links.push({ el: h, li });
+      });
+      tocBox.hidden = false;
+
+      // 滚动高亮
+      const io = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.filter((e) => e.isIntersecting);
+          if (visible.length === 0) return;
+          const target = visible[visible.length - 1].target as HTMLElement;
+          for (const { el, li } of links) {
+            li.classList.toggle('toc-active', el === target);
+          }
+        },
+        { rootMargin: '-96px 0% -72% 0%', threshold: 0 },
+      );
+      links.forEach(({ el }) => io.observe(el));
+    }
+  }
+</script>

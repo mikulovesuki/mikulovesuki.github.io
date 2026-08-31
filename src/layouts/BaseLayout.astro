@@ -2,6 +2,7 @@
 import { SITE } from '../config';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import RightSidebar from '../components/RightSidebar.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -56,11 +57,21 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://mikulovesuk
 
     <meta name="theme-color" content="#f6f8fb" />
   </head>
-  <body class="min-h-screen flex flex-col">
+  <body class="flex min-h-screen flex-col">
     <Navbar />
-    <main class="flex-1">
-      <slot />
-    </main>
+    <div class="flex flex-1 flex-col">
+      <!-- 全宽区域（如首页横幅），由页面通过 slot="hero" 填充 -->
+      <slot name="hero" />
+      <!-- 双栏布局：内容区 + 右侧栏（lg 以下自动收成单栏） -->
+      <div class="mx-auto flex w-full max-w-6xl flex-1 items-start gap-10 px-4 py-12 sm:px-6">
+        <main class="min-w-0 flex-1">
+          <slot />
+        </main>
+        <aside class="sticky top-[72px] hidden max-h-[calc(100vh-92px)] w-72 shrink-0 overflow-y-auto pb-6 lg:block">
+          <RightSidebar />
+        </aside>
+      </div>
+    </div>
     <Footer />
     <!-- 站点吉祥物（二次元彩蛋，点击回「关于」页） -->
     <a href="/about/" title="来认识一下站长的二次元分身" aria-label="关于我" class="mascot-fixed">

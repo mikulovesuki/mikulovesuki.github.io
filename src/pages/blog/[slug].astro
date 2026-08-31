@@ -17,7 +17,7 @@ const fmt = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', d
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+  <article class="mx-auto max-w-3xl">
     <header class="mb-10 border-b border-(--color-border) pb-8">
       <p class="font-mono text-xs text-(--color-ink-faint)">
         {fmt.format(post.data.pubDate)}

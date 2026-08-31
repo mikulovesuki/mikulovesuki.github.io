@@ -92,6 +92,7 @@ npm run preview    # 预览构建产物
 
 ## 装饰素材（二次元主题）
 
+- **`src/components/RightSidebar.astro`**：全站右侧栏（≥lg 双栏显示），含作者卡 / 公告 / 最新文章 / 标签云 / 目录（目录由 JS 扫描当前页 h2/h3 生成，带滚动高亮）；公告文案直接编辑该文件
 - **`public/img/`**：站点装饰图（已压缩优化）
   - `hero-dusk.jpg` — 首页横幅背景（黄昏雨景）
   - `angel-clouds.jpg` — 关于页横幅（天使云海）

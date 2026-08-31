@@ -18,6 +18,12 @@
   --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
   --font-serif: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  /* 全局柔光背景光斑（浅色）+ 点阵 */
+  --glow-1: rgba(139, 124, 246, 0.14);
+  --glow-2: rgba(73, 177, 245, 0.13);
+  --glow-3: rgba(244, 114, 182, 0.1);
+  --glow-dot: rgba(61, 74, 88, 0.07);
 }
 
 /* 夜间模式（等价于 Butterfly 的昼夜切换，由导航栏按钮控制） */
@@ -33,6 +39,10 @@
   --color-accent-2: #a78bfa;
   --color-accent-3: #f472b6;
   --color-code-bg: #0d1219;
+  --glow-1: rgba(167, 139, 250, 0.09);
+  --glow-2: rgba(79, 209, 197, 0.07);
+  --glow-3: rgba(244, 114, 182, 0.07);
+  --glow-dot: rgba(215, 224, 234, 0.045);
 }
 
 html {
@@ -183,6 +193,49 @@ body {
     bottom: 20px;
     width: 84px;
   }
+}
+
+/* ============================================================
+   全局柔光背景（二次元渐晕光斑 + 点阵网格，消除纯色单调感）
+   ============================================================ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(720px 480px at 88% -6%, var(--glow-1), transparent 62%),
+    radial-gradient(640px 520px at -8% 30%, var(--glow-2), transparent 60%),
+    radial-gradient(720px 560px at 52% 112%, var(--glow-3), transparent 62%);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(var(--glow-dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* 侧栏目录：读取位置高亮 + 细滚动条 */
+.toc-scroll {
+  scrollbar-width: thin;
+}
+
+.toc-scroll li a {
+  transition: color 0.15s ease;
+}
+
+.toc-scroll li.toc-active > a {
+  color: var(--color-accent);
+}
+
+/* 阴影提示的侧栏卡片 */
+.aside-card {
+  box-shadow: 0 1px 2px rgba(20, 40, 70, 0.05);
 }
 
 /* 头像（关于页 Q 版立绘） */
