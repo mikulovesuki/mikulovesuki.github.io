@@ -18,7 +18,7 @@ const url = `https://github.com/mikulovesuki/${project.repo}`;
 
 <article class="group flex flex-col rounded-xl border border-(--color-border) bg-(--color-panel) p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-(--color-accent)/60 hover:shadow-lg hover:shadow-(--color-accent)/10">
   <div class="flex items-start justify-between gap-3">
-    <h3 class="font-mono text-lg font-semibold text-(--color-ink) transition-colors group-hover:text-(--color-accent)">
+    <h3 class="no-hyphen-break font-mono text-lg font-semibold text-(--color-ink) transition-colors group-hover:text-(--color-accent)">
       {project.name}
     </h3>
     <span class:list={['shrink-0 rounded-full border px-2.5 py-0.5 text-xs', isAi ? 'border-(--color-accent-2)/40 text-(--color-accent-2)' : 'border-(--color-accent)/40 text-(--color-accent)']}>
