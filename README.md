@@ -90,6 +90,17 @@ npm run preview    # 预览构建产物
 
 > 注意：管理后台仅在本地开发模式（`start.bat` / `npm run dev`）可用；线上静态页面不含管理接口。
 
+## 装饰素材（二次元主题）
+
+- **`public/img/`**：站点装饰图（已压缩优化）
+  - `hero-dusk.jpg` — 首页横幅背景（黄昏雨景）
+  - `angel-clouds.jpg` — 关于页横幅（天使云海）
+  - `pool-night.jpg` — 项目页横幅（霓虹泳池）
+  - `mascot-chibi.jpg` — 关于页 Q 版头像（蓝鲸女仆）
+- **`public/favicon.png`** — 站点图标（同上 Q 版头像脸部裁剪）
+- 替换方式：直接覆盖 `public/img/` 下同名文件，或在 `picture/` 放新图后参照 `src/pages/about.astro`、`src/pages/projects.astro`、`src/styles/global.css`（`.hero-sky`）中的引用写法接入
+- 建议尺寸：横幅宽 ≥ 1200px，Q 版头像方形裁切即可；大图先用图片工具压缩（参考现有文件 ~300KB）
+
 ## 致谢
 
 基于 [Astro](https://astro.build) 与 [Tailwind CSS](https://tailwindcss.com) 构建。

@@ -92,23 +92,29 @@ body {
 }
 
 /* ============================================================
-   横幅（仿 Butterfly banner：天空 + 云 + 草地，纯 CSS 绘制）
+   横幅：二次元风景背景板（public/img/hero-dusk.jpg，黄昏雨景）
    ============================================================ */
 .hero-sky {
   background:
-    radial-gradient(ellipse 55% 38% at 84% 10%, rgba(255, 243, 204, 0.9), rgba(255, 243, 204, 0) 62%),
-    linear-gradient(180deg, #5f9fd6 0%, #8fc0e8 38%, #c6e2f5 68%, #e8f4fb 100%);
+    linear-gradient(180deg, rgba(20, 26, 40, 0) 0%, rgba(20, 26, 40, 0) 100%),
+    url('/img/hero-dusk.jpg') center 30% / cover no-repeat;
 }
 
-.hero-field {
-  background: linear-gradient(180deg, #b9d585 0%, #8cbf68 32%, #6ba24b 100%);
+/* 文字可读性遮罩：让白色标题在明暗雨景上都清晰 */
+.hero-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 16, 26, 0.38) 0%,
+    rgba(12, 16, 26, 0.18) 42%,
+    rgba(12, 16, 26, 0.55) 100%
+  );
 }
 
 .hero-cloud {
   position: absolute;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  filter: blur(14px);
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(20px);
   animation: cloud-drift linear infinite;
 }
 
@@ -118,11 +124,11 @@ body {
 }
 
 .hero-title {
-  text-shadow: 0 2px 18px rgba(40, 80, 110, 0.45);
+  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.6), 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
 .hero-sub {
-  text-shadow: 0 1px 10px rgba(40, 80, 110, 0.4);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 @keyframes bounce-down {
@@ -132,6 +138,60 @@ body {
 
 .chevron-down {
   animation: bounce-down 1.8s ease-in-out infinite;
+}
+
+/* ============================================================
+   二次元装饰：浮动吉祥物（蓝鲸女仆 Q 版）
+   ============================================================ */
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.mascot-fixed {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 40;
+  width: 64px;
+  padding: 3px;
+  border-radius: 9999px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 6px 20px rgba(20, 40, 70, 0.18);
+  animation: mascot-float 4.5s ease-in-out infinite;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.mascot-fixed img,
+.mascot-fixed svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 9999px;
+}
+
+.mascot-fixed:hover {
+  transform: translateY(-4px) scale(1.08);
+  animation-play-state: paused;
+}
+
+@media (min-width: 768px) {
+  .mascot-fixed {
+    right: 20px;
+    bottom: 20px;
+    width: 84px;
+  }
+}
+
+/* 头像（关于页 Q 版立绘） */
+.chibi-avatar {
+  object-fit: cover;
+  object-position: center 18%;
+  border-radius: 24px;
+  border: 2px solid var(--color-border);
+  box-shadow: 0 10px 28px rgba(72, 110, 180, 0.22);
 }
 
 /* 主题切换按钮图标（黑/白两态） */

@@ -12,26 +12,40 @@ const freeCards = getMergedFreeCards();
 
 <BaseLayout title="关于">
   <div class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-    <header class="mb-12">
+    <header class="mb-10">
       <p class="font-mono text-xs text-(--color-accent)">## about</p>
       <h1 class="mt-2 font-serif text-3xl font-bold text-(--color-ink)">自我介绍</h1>
     </header>
 
+    <!-- 二次元背景板：天使云海 -->
+    <div class="relative mb-12 h-44 w-full overflow-hidden rounded-2xl border border-(--color-border) shadow-sm sm:h-56">
+      <img src="/img/angel-clouds.jpg" alt="" class="absolute inset-0 h-full w-full object-cover object-[50%_20%]" loading="lazy" />
+      <div class="absolute inset-0 bg-gradient-to-t from-(--color-bg)/85 via-(--color-bg)/15 to-transparent"></div>
+      <p class="absolute bottom-3 left-4 font-mono text-[11px] text-(--color-ink-dim) sm:text-xs">
+        fly with the morning clouds · 2026
+      </p>
+    </div>
+
     <!-- 自我介绍（内容在 src/data/profile.ts 中填写） -->
     <section class="mb-14 rounded-xl border border-(--color-border) bg-(--color-panel) p-7">
-      <h2 class="font-serif text-2xl font-bold text-(--color-ink)">
-        <span class="text-(--color-accent)">{profile.name}</span>
-      </h2>
-      <p class="mt-1 font-mono text-sm text-(--color-accent-2)">
-        {profile.headline}
-      </p>
-      {
-        profile.status && (
-          <p class="mt-2 inline-block rounded-full border border-(--color-accent)/40 px-3 py-1 text-xs text-(--color-accent)">
-            {profile.status}
+      <div class="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+        <img src="/img/mascot-chibi.jpg" alt="mikulovesuki 的 Q 版形象（蓝鲸女仆）" class="chibi-avatar h-24 w-24 shrink-0" loading="lazy" />
+        <div>
+          <h2 class="font-serif text-2xl font-bold text-(--color-ink)">
+            <span class="text-(--color-accent)">{profile.name}</span>
+          </h2>
+          <p class="mt-1 font-mono text-sm text-(--color-accent-2)">
+            {profile.headline}
           </p>
-        )
-      }
+          {
+            profile.status && (
+              <p class="mt-2 inline-block rounded-full border border-(--color-accent)/40 px-3 py-1 text-xs text-(--color-accent)">
+                {profile.status}
+              </p>
+            )
+          }
+        </div>
+      </div>
       <div class="mt-5 space-y-4">
         {
           profile.paragraphs.map((p) => (
