@@ -1,0 +1,470 @@
+---
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>站点管理 · oblivion</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen bg-(--color-bg) text-(--color-ink)">
+    <!-- 登录门 -->
+    <div id="login-gate" class="flex min-h-screen items-center justify-center px-4">
+      <div class="w-full max-w-sm rounded-xl border border-(--color-border) bg-(--color-panel) p-8">
+        <h1 class="font-serif text-xl font-bold text-(--color-ink)">站点管理</h1>
+        <p class="mt-2 text-sm text-(--color-ink-dim)">输入管理密码进入编辑后台。</p>
+        <form id="login-form" class="mt-6 flex flex-col gap-3">
+          <input
+            id="login-token"
+            type="password"
+            placeholder="管理密码"
+            autocomplete="current-password"
+            class="rounded-lg border border-(--color-border) bg-(--color-bg) px-4 py-2.5 text-sm outline-none focus:border-(--color-accent)"
+          />
+          <button type="submit" class="rounded-lg bg-(--color-accent) py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+            进入后台
+          </button>
+          <p id="login-error" class="hidden text-xs text-red-400"></p>
+          <p class="text-xs text-(--color-ink-faint)">
+            默认密码：<code class="font-mono text-(--color-ink-dim)">111</code>（可在 <code class="font-mono text-(--color-ink-dim)">.env</code> 的 ADMIN_TOKEN 中修改）
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- 管理面板 -->
+    <div id="panel" class="hidden">
+      <header class="sticky top-0 z-10 border-b border-(--color-border) bg-(--color-bg)/90 backdrop-blur-md">
+        <div class="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
+          <h1 class="font-serif text-lg font-bold text-(--color-ink)">站点管理</h1>
+          <span id="save-status" class="text-xs text-(--color-ink-faint)"></span>
+          <div class="ml-auto flex flex-wrap gap-2">
+            <button id="btn-save" class="rounded-lg bg-(--color-accent) px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+              保存
+            </button>
+            <button id="btn-publish" class="rounded-lg border border-(--color-accent) px-4 py-2 text-sm font-semibold text-(--color-accent) transition-colors hover:bg-(--color-accent)/10">
+              发布到线上
+            </button>
+            <a href="/" target="_blank" class="rounded-lg border border-(--color-border) px-4 py-2 text-sm text-(--color-ink-dim) transition-colors hover:text-(--color-ink)">
+              预览网站
+            </a>
+            <button id="btn-logout" class="rounded-lg border border-(--color-border) px-3 py-2 text-sm text-(--color-ink-faint) hover:text-(--color-ink)">
+              退出
+            </button>
+          </div>
+        </div>
+        <p id="publish-result" class="hidden border-t border-(--color-border) bg-(--color-bg-soft) px-4 py-2 text-center text-xs sm:px-6"></p>
+      </header>
+
+      <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <!-- 自由卡片 -->
+        <section class="mb-12">
+          <div class="mb-2 flex items-center justify-between">
+            <h2 class="font-mono text-sm font-semibold text-(--color-accent)">1 · 自由卡片区</h2>
+            <button id="btn-add-card" class="rounded-md border border-(--color-border) px-3 py-1.5 text-xs text-(--color-ink-dim) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)">
+              + 添加卡片
+            </button>
+          </div>
+          <p class="mb-3 text-xs text-(--color-ink-faint)">按住「⠿」手柄拖拽排序；标题、正文、链接直接输入即可。</p>
+          <div id="free-cards" class="space-y-3"></div>
+        </section>
+
+        <!-- 精选项目 -->
+        <section class="mb-12">
+          <div class="mb-4">
+            <h2 class="font-mono text-sm font-semibold text-(--color-accent-2)">2 · 精选项目</h2>
+            <p class="mt-1 text-xs text-(--color-ink-faint)">拖动手柄排序；点击标题展开编辑。高亮内容每行一条；标签用逗号分隔。</p>
+          </div>
+          <div id="projects" class="space-y-3"></div>
+        </section>
+
+        <!-- 技能组 -->
+        <section class="mb-12">
+          <div class="mb-4">
+            <h2 class="font-mono text-sm font-semibold text-(--color-accent-3)">3 · 技能组</h2>
+            <p class="mt-1 text-xs text-(--color-ink-faint)">拖动手柄排序分组；技能标签每行一个。</p>
+          </div>
+          <div id="skills" class="space-y-3"></div>
+        </section>
+
+        <!-- 时间线 -->
+        <section class="mb-12">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="font-mono text-sm font-semibold text-(--color-ink)">4 · 时间线</h2>
+            <button id="btn-add-timeline" class="rounded-md border border-(--color-border) px-3 py-1.5 text-xs text-(--color-ink-dim) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)">
+              + 添加条目
+            </button>
+          </div>
+          <div id="timeline" class="space-y-3"></div>
+        </section>
+      </main>
+    </div>
+
+    <script is:inline>
+      (function () {
+        const TOKEN_KEY = 'oblivion_admin_token';
+        const gate = document.getElementById('login-gate');
+        const panel = document.getElementById('panel');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const saveStatus = document.getElementById('save-status');
+        const publishResult = document.getElementById('publish-result');
+        const btnSave = document.getElementById('btn-save');
+        const btnPublish = document.getElementById('btn-publish');
+        const btnLogout = document.getElementById('btn-logout');
+
+        let token = sessionStorage.getItem(TOKEN_KEY) || '';
+        /** 当前编辑状态（与 API 返回的 merged 一致） */
+        let state = { free_cards: [], projects: [], skills: [], timeline: [] };
+
+        const $ = (sel, root) => (root || document).querySelector(sel);
+        const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+        const authHeaders = () => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+        const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+        /* ---------- 登录 ---------- */
+        async function showLoginError(msg) {
+          loginError.textContent = msg;
+          loginError.classList.remove('hidden');
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          token = document.getElementById('login-token').value.trim();
+          if (!token) {
+            showLoginError('请输入管理密码。');
+            return;
+          }
+          sessionStorage.setItem(TOKEN_KEY, token);
+          loginError.classList.add('hidden');
+          const result = await tryLoad();
+          if (result === 'unauthorized') {
+            showLoginError('密码错误，请重试。');
+            sessionStorage.removeItem(TOKEN_KEY);
+            token = '';
+          } else if (result === 'error') {
+            showLoginError('无法连接管理接口（仅在本地开发模式 `npm run dev` 可用），已清除记录的密码。');
+            sessionStorage.removeItem(TOKEN_KEY);
+            token = '';
+          } else {
+            gate.classList.add('hidden');
+            panel.classList.remove('hidden');
+          }
+        });
+
+        async function tryLoad() {
+          try {
+            const res = await fetch('/api/admin', { headers: { Authorization: `Bearer ${token}` } });
+            if (res.status === 401) return 'unauthorized';
+            if (!res.ok) return 'error';
+            const data = await res.json();
+            state = data.merged || state;
+            renderAll();
+            return 'ok';
+          } catch {
+            return 'error';
+          }
+        }
+
+        /* ---------- 渲染 ---------- */
+        function renderAll() {
+          renderFreeCards();
+          renderProjects();
+          renderSkills();
+          renderTimeline();
+        }
+
+        function cardShell(id, title, extraHeader) {
+          const li = document.createElement('div');
+          li.className = 'rounded-xl border border-(--color-border) bg-(--color-panel)';
+          li.dataset.id = id;
+          const head = document.createElement('div');
+          head.className = 'flex items-center gap-2 px-4 py-3 cursor-move select-none';
+          head.innerHTML =
+            '<span class="drag-handle text-(--color-ink-faint)" title="按住拖拽排序">⠿</span>' +
+            `<span class="min-w-0 flex-1 truncate text-sm font-semibold text-(--color-ink)">${esc(title)}</span>` +
+            (extraHeader || '');
+          li.appendChild(head);
+          return li;
+        }
+
+        /* 自由卡片 */
+        function renderFreeCards() {
+          const box = document.getElementById('free-cards');
+          box.innerHTML = '';
+          state.free_cards.forEach((card, i) => {
+            const li = cardShell(card.id, card.title || '（无标题）',
+              `<button class="btn-del-card text-xs text-(--color-ink-faint) hover:text-red-400">删除</button>`);
+            const body = document.createElement('div');
+            body.className = 'space-y-2 px-4 pb-4';
+            body.innerHTML = `
+              <input class="f-title w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" placeholder="卡片标题" value="${esc(card.title)}" />
+              <textarea class="f-body w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" rows="3" placeholder="卡片内容（支持链接、说明等任意文字）">${esc(card.body)}</textarea>
+              <input class="f-link w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" placeholder="可选链接（https://...）" value="${esc(card.link || '')}" />`;
+            li.appendChild(body);
+            box.appendChild(li);
+          });
+          wireDrag(box);
+          $$('.btn-del-card', box).forEach((btn, idx) => {
+            btn.addEventListener('click', () => { state.free_cards.splice(idx, 1); renderFreeCards(); markDirty(); });
+          });
+        }
+
+        /* 精选项目 */
+        function renderProjects() {
+          const box = document.getElementById('projects');
+          box.innerHTML = '';
+          state.projects.forEach((p, i) => {
+            const isAi = p.category === 'ai';
+            const li = cardShell(p.repo, `${p.repo} — ${p.tagline || ''}`,
+              `<label class="flex items-center gap-1.5 text-xs text-(--color-ink-faint)"><input type="checkbox" class="p-featured" ${p.featured ? 'checked' : ''} /> 首页精选</label>`);
+            const body = document.createElement('div');
+            body.className = 'space-y-2 px-4 pb-4';
+            const period = esc(p.period || '');
+            const hl = (p.highlights || []).map(esc).join('\n');
+            const tech = (p.tech || []).map(esc).join(', ');
+            body.innerHTML = `
+              <div class="grid gap-2 sm:grid-cols-2">
+                <input class="p-tagline rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" placeholder="一句话亮点" value="${esc(p.tagline || '')}" />
+                <input class="p-period rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" placeholder="时间周期（如 2026.08）" value="${period}" />
+              </div>
+              <textarea class="p-desc w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" rows="4" placeholder="项目介绍">${esc(p.description || '')}</textarea>
+              <textarea class="p-hl w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 font-mono text-xs outline-none focus:border-(--color-accent)" rows="4" placeholder="亮点 / 量化成果（每行一条）">${hl}</textarea>
+              <textarea class="p-tech w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 font-mono text-xs outline-none focus:border-(--color-accent)" rows="2" placeholder="技术标签（逗号分隔）">${tech}</textarea>`;
+            li.appendChild(body);
+            box.appendChild(li);
+          });
+          wireDrag(box);
+        }
+
+        /* 技能组 */
+        function renderSkills() {
+          const box = document.getElementById('skills');
+          box.innerHTML = '';
+          state.skills.forEach((g) => {
+            const li = cardShell(g.id, g.title || '（技能组）', '');
+            const body = document.createElement('div');
+            body.className = 'space-y-2 px-4 pb-4';
+            body.innerHTML = `
+              <div class="grid gap-2 sm:grid-cols-2">
+                <input class="s-title rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" value="${esc(g.title || '')}" placeholder="组名" />
+                <input class="s-desc rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" value="${esc(g.desc || '')}" placeholder="分组描述" />
+              </div>
+              <textarea class="s-skills w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 font-mono text-xs outline-none focus:border-(--color-accent)" rows="4" placeholder="技能（每行一个）">${(g.skills || []).map(esc).join('\n')}</textarea>`;
+            li.appendChild(body);
+            box.appendChild(li);
+          });
+          wireDrag(box);
+        }
+
+        /* 时间线 */
+        function renderTimeline() {
+          const box = document.getElementById('timeline');
+          box.innerHTML = '';
+          state.timeline.forEach((t) => {
+            const li = cardShell(`${t.period}|${t.title}`, `${t.period} — ${t.title || ''}`,
+              `<button class="btn-del-tl text-xs text-(--color-ink-faint) hover:text-red-400">删除</button>`);
+            const body = document.createElement('div');
+            body.className = 'space-y-2 px-4 pb-4';
+            const tagOpts = ['learning', 'competition', 'project'].map((v) =>
+              `<option value="${v}" ${t.tag === v ? 'selected' : ''}>${v}</option>`).join('');
+            body.innerHTML = `
+              <div class="grid gap-2 sm:grid-cols-2">
+                <input class="t-period rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" value="${esc(t.period || '')}" placeholder="时间（如 2026.06）" />
+                <input class="t-title rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" value="${esc(t.title || '')}" placeholder="标题" />
+              </div>
+              <textarea class="t-desc w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" rows="3" placeholder="描述">${esc(t.description || '')}</textarea>
+              <div class="grid gap-2 sm:grid-cols-2">
+                <select class="t-tag rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)">${tagOpts}</select>
+                <input class="t-repos rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 font-mono text-xs outline-none focus:border-(--color-accent)" value="${(t.repos || []).map(esc).join(', ')}" placeholder="关联仓库（逗号分隔）" />
+              </div>`;
+            li.appendChild(body);
+            box.appendChild(li);
+          });
+          wireDrag(box);
+          $$('.btn-del-tl', box).forEach((btn, idx) => {
+            btn.addEventListener('click', () => { state.timeline.splice(idx, 1); renderTimeline(); markDirty(); });
+          });
+        }
+
+        /* ---------- 拖拽排序 ---------- */
+        function wireDrag(container) {
+          $$(':scope > div', container).forEach((item) => {
+            item.draggable = true;
+            item.addEventListener('dragstart', (e) => {
+              const t = e.target;
+              if (t instanceof HTMLElement && !t.closest('.drag-handle')) {
+                e.preventDefault();
+                return;
+              }
+              e.dataTransfer.effectAllowed = 'move';
+              item.classList.add('opacity-50');
+              item.dataset.dragging = '1';
+            });
+            item.addEventListener('dragend', () => {
+              item.classList.remove('opacity-50');
+              delete item.dataset.dragging;
+            });
+          });
+          container.addEventListener('dragover', (e) => {
+            const dragging = $$('[data-dragging="1"]', container)[0];
+            if (!dragging) return;
+            e.preventDefault();
+            const items = $$(':scope > div', container).filter((el) => el !== dragging);
+            let next = null;
+            for (const el of items) {
+              const rect = el.getBoundingClientRect();
+              if (e.clientY < rect.top + rect.height / 2) { next = el; break; }
+            }
+            if (next) container.insertBefore(dragging, next);
+            else container.appendChild(dragging);
+          });
+        }
+
+        /* ---------- 收集与保存 ---------- */
+        function collect() {
+          const free = $$('#free-cards > div').map((li) => ({
+            id: li.dataset.id,
+            title: $('.f-title', li).value.trim(),
+            body: $('.f-body', li).value.trim(),
+            link: $('.f-link', li).value.trim() || undefined,
+          }));
+          const proj = $$('#projects > div').map((li) => ({
+            repo: li.dataset.id,
+            tagline: $('.p-tagline', li).value.trim(),
+            period: $('.p-period', li).value.trim(),
+            description: $('.p-desc', li).value.trim(),
+            highlights: $('.p-hl', li).value.split('\n').map((s) => s.trim()).filter(Boolean),
+            tech: $('.p-tech', li).value.split(',').map((s) => s.trim()).filter(Boolean),
+            featured: $('.p-featured', li).checked,
+          }));
+          const skills = $$('#skills > div').map((li) => ({
+            id: li.dataset.id,
+            title: $('.s-title', li).value.trim(),
+            desc: $('.s-desc', li).value.trim(),
+            skills: $('.s-skills', li).value.split('\n').map((s) => s.trim()).filter(Boolean),
+          }));
+          const tl = $$('#timeline > div').map((li) => ({
+            period: $('.t-period', li).value.trim(),
+            title: $('.t-title', li).value.trim(),
+            description: $('.t-desc', li).value.trim(),
+            tag: $('.t-tag', li).value,
+            repos: $('.t-repos', li).value.split(',').map((s) => s.trim()).filter(Boolean),
+          }));
+          return { free_cards: free, projects: proj, skills, timeline: tl };
+        }
+
+        function toOverrides(m) {
+          return {
+            free_cards: m.free_cards,
+            projects: Object.fromEntries(m.projects.map((p, i) => [
+              p.repo,
+              { tagline: p.tagline, description: p.description, highlights: p.highlights, tech: p.tech, featured: p.featured, period: p.period, order: i },
+            ])),
+            skills: Object.fromEntries(m.skills.map((g, i) => [
+              g.id,
+              { title: g.title, desc: g.desc, skills: g.skills, order: i },
+            ])),
+            timeline: m.timeline.map((t, i) => ({ ...t, order: i })),
+          };
+        }
+
+        let dirty = false;
+        function markDirty() {
+          dirty = true;
+          saveStatus.textContent = '有未保存的更改';
+        }
+
+        btnSave.addEventListener('click', async () => {
+          state = collect();
+          const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(toOverrides(state)),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            dirty = false;
+            saveStatus.textContent = `已保存 ${new Date().toLocaleTimeString()}`;
+            saveStatus.style.color = '';
+          } else {
+            saveStatus.textContent = `保存失败：${data.error || '未知错误'}`;
+            saveStatus.style.color = '#f87171';
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            btnSave.click();
+          }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+          if (!dirty) return;
+          e.preventDefault();
+          e.returnValue = '';
+        });
+
+        btnPublish.addEventListener('click', async () => {
+          publishResult.classList.remove('hidden');
+          publishResult.textContent = '发布中：提交并推送数据…';
+          publishResult.style.color = '';
+          // 先保存，再发布
+          state = collect();
+          const saveRes = await fetch('/api/admin', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(toOverrides(state)),
+          });
+          if (!saveRes.ok) {
+            publishResult.textContent = '保存失败，已中止发布。';
+            publishResult.style.color = '#f87171';
+            return;
+          }
+          const res = await fetch('/api/publish', { method: 'POST', headers: authHeaders() });
+          const data = await res.json();
+          publishResult.textContent = res.ok ? `✓ ${data.message || '发布成功'}` : `✗ ${data.error || '发布失败'}`;
+          publishResult.style.color = res.ok ? '#4ade80' : '#f87171';
+          dirty = false;
+          saveStatus.textContent = '';
+        });
+
+        btnLogout.addEventListener('click', () => {
+          sessionStorage.removeItem(TOKEN_KEY);
+          location.reload();
+        });
+
+        /* 添加/删除 */
+        document.getElementById('btn-add-card').addEventListener('click', () => {
+          state.free_cards.push({ id: 'c' + Date.now().toString(36), title: '', body: '', link: '' });
+          renderFreeCards();
+          markDirty();
+        });
+        document.getElementById('btn-add-timeline').addEventListener('click', () => {
+          state.timeline.push({ period: '', title: '', description: '', tag: 'project', repos: [] });
+          renderTimeline();
+          markDirty();
+        });
+
+        /* 页面加载时若已有 token 直接尝试进入 */
+        if (token) {
+          (async () => {
+            const ok = await tryLoad();
+            if (ok === 'ok') {
+              gate.classList.add('hidden');
+              panel.classList.remove('hidden');
+            } else {
+              sessionStorage.removeItem(TOKEN_KEY);
+              token = '';
+            }
+          })();
+        }
+      })();
+    </script>
+  </body>
+</html>

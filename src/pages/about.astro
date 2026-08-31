@@ -2,51 +2,66 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SkillCloud from '../components/SkillCloud.astro';
 import Timeline from '../components/Timeline.astro';
+import FreeCards from '../components/FreeCards.astro';
+import { getMergedFreeCards } from '../lib/site-data';
+import { profile } from '../data/profile';
 import { SITE } from '../config';
+
+const freeCards = getMergedFreeCards();
 ---
 
 <BaseLayout title="关于">
   <div class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
     <header class="mb-12">
       <p class="font-mono text-xs text-(--color-accent)">## about</p>
-      <h1 class="mt-2 font-serif text-3xl font-bold text-white">关于我</h1>
+      <h1 class="mt-2 font-serif text-3xl font-bold text-(--color-ink)">自我介绍</h1>
     </header>
 
-    <!-- 简介 -->
+    <!-- 自我介绍（内容在 src/data/profile.ts 中填写） -->
     <section class="mb-14 rounded-xl border border-(--color-border) bg-(--color-panel) p-7">
-      <p class="leading-7 text-(--color-ink)">
-        <span class="font-serif text-2xl text-(--color-accent)">oblivion</span>
-        ，广东工业大学学生，主攻
-        <span class="text-(--color-accent-2)">AI 应用开发</span>与
-        <span class="text-(--color-accent)">数值计算</span>两个方向。
+      <h2 class="font-serif text-2xl font-bold text-(--color-ink)">
+        <span class="text-(--color-accent)">{profile.name}</span>
+      </h2>
+      <p class="mt-1 font-mono text-sm text-(--color-accent-2)">
+        {profile.headline}
       </p>
-      <p class="mt-4 leading-7 text-(--color-ink-dim)">
-        我习惯把学习过程落到可验证的产出上：数值算法要给出相对误差量级，AI 应用要带测试与 CI，
-        论文写完要能编译成 PDF。做过的项目横跨
-        MCP 协议、RAG 混合检索、多 Agent 编排、Julia 数值线性代数、Modelica 动力学仿真与 LaTeX 学术写作——
-        从公式推导到系统工程都愿意亲手做一遍。
-      </p>
-      <p class="mt-4 leading-7 text-(--color-ink-dim)">
-        这个网站记录我的项目与学习笔记。欢迎通过 GitHub 交流。
-      </p>
+      {
+        profile.status && (
+          <p class="mt-2 inline-block rounded-full border border-(--color-accent)/40 px-3 py-1 text-xs text-(--color-accent)">
+            {profile.status}
+          </p>
+        )
+      }
+      <div class="mt-5 space-y-4">
+        {
+          profile.paragraphs.map((p) => (
+            <p class="leading-7 text-(--color-ink-dim)">{p}</p>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 自由卡片（管理后台可编辑） -->
+    <section class="mb-14">
+      <h2 class="mb-5 font-serif text-xl font-bold text-(--color-ink)">自由卡片</h2>
+      <FreeCards cards={freeCards} />
     </section>
 
     <!-- 技能 -->
     <section class="mb-14">
-      <h2 class="mb-5 font-serif text-xl font-bold text-white">技能栈</h2>
+      <h2 class="mb-5 font-serif text-xl font-bold text-(--color-ink)">技能栈</h2>
       <SkillCloud />
     </section>
 
     <!-- 时间线 -->
     <section class="mb-14">
-      <h2 class="mb-5 font-serif text-xl font-bold text-white">经历时间线</h2>
+      <h2 class="mb-5 font-serif text-xl font-bold text-(--color-ink)">经历时间线</h2>
       <Timeline />
     </section>
 
     <!-- 联系方式 -->
     <section class="rounded-xl border border-(--color-border) bg-(--color-panel) p-7">
-      <h2 class="mb-4 font-serif text-xl font-bold text-white">联系我</h2>
-      <div class="flex flex-col gap-3 font-mono text-sm">
+      <h2 class="mb-4 font-serif text-xl font-bold text-(--color-ink)">联系我</h2>      <div class="flex flex-col gap-3 font-mono text-sm">
         <a
           href={SITE.github}
           target="_blank"
@@ -74,5 +89,11 @@ import { SITE } from '../config';
         }
       </div>
     </section>
+
+    <p class="mt-10 text-center">
+      <a href="/" class="font-mono text-sm text-(--color-ink-faint) transition-colors hover:text-(--color-accent)">
+        ← 返回首页
+      </a>
+    </p>
   </div>
 </BaseLayout>

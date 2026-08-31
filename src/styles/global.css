@@ -2,6 +2,26 @@
 @import "katex/dist/katex.min.css";
 
 @theme {
+  /* 浅色（默认）—— 仿 Butterfly 主题：白卡片 / 浅蓝主色 */
+  --color-bg: #f6f8fb;
+  --color-bg-soft: #eef2f7;
+  --color-panel: #ffffff;
+  --color-border: #e4e9f1;
+  --color-ink: #3d4a58;
+  --color-ink-dim: #5f6f7e;
+  --color-ink-faint: #97a3af;
+  --color-accent: #49b1f5;
+  --color-accent-2: #8b7cf6;
+  --color-accent-3: #f472b6;
+  --color-code-bg: #f1f4f9;
+
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  --font-serif: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 夜间模式（等价于 Butterfly 的昼夜切换，由导航栏按钮控制） */
+.dark {
   --color-bg: #0a0e14;
   --color-bg-soft: #0f1520;
   --color-panel: #131a26;
@@ -13,10 +33,6 @@
   --color-accent-2: #a78bfa;
   --color-accent-3: #f472b6;
   --color-code-bg: #0d1219;
-
-  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
-  --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
-  --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 html {
@@ -30,13 +46,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 数学公式在暗色主题下的可读性 */
+/* 数学公式 */
 .katex {
   color: var(--color-ink);
 }
 
 ::selection {
-  background-color: rgba(79, 209, 197, 0.25);
+  background-color: rgba(73, 177, 245, 0.22);
 }
 
 /* 滚动条 */
@@ -65,16 +81,6 @@ body {
   animation: blink 1s step-end infinite;
 }
 
-/* 公式背景缓慢漂移 */
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-14px) rotate(2deg); }
-}
-
-.formula-float {
-  animation: float-slow 9s ease-in-out infinite;
-}
-
 /* 淡入 */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
@@ -85,6 +91,55 @@ body {
   animation: fade-up 0.7s ease-out both;
 }
 
+/* ============================================================
+   横幅（仿 Butterfly banner：天空 + 云 + 草地，纯 CSS 绘制）
+   ============================================================ */
+.hero-sky {
+  background:
+    radial-gradient(ellipse 55% 38% at 84% 10%, rgba(255, 243, 204, 0.9), rgba(255, 243, 204, 0) 62%),
+    linear-gradient(180deg, #5f9fd6 0%, #8fc0e8 38%, #c6e2f5 68%, #e8f4fb 100%);
+}
+
+.hero-field {
+  background: linear-gradient(180deg, #b9d585 0%, #8cbf68 32%, #6ba24b 100%);
+}
+
+.hero-cloud {
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  filter: blur(14px);
+  animation: cloud-drift linear infinite;
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 480px)); }
+}
+
+.hero-title {
+  text-shadow: 0 2px 18px rgba(40, 80, 110, 0.45);
+}
+
+.hero-sub {
+  text-shadow: 0 1px 10px rgba(40, 80, 110, 0.4);
+}
+
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); opacity: 0.9; }
+  50% { transform: translateY(8px); opacity: 0.45; }
+}
+
+.chevron-down {
+  animation: bounce-down 1.8s ease-in-out infinite;
+}
+
+/* 主题切换按钮图标（黑/白两态） */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+.dark .theme-toggle .icon-sun { display: block; }
+.dark .theme-toggle .icon-moon { display: none; }
+
 /* 博客正文排版 */
 .prose-blog {
   line-height: 1.85;
@@ -93,11 +148,11 @@ body {
 }
 
 .prose-blog h2 {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.5rem;
   font-weight: 700;
   margin: 2.5rem 0 1rem;
-  color: #fff;
+  color: var(--color-ink);
   border-left: 3px solid var(--color-accent);
   padding-left: 0.75rem;
 }
@@ -106,7 +161,7 @@ body {
   font-size: 1.2rem;
   font-weight: 700;
   margin: 2rem 0 0.75rem;
-  color: #fff;
+  color: var(--color-ink);
 }
 
 .prose-blog p {

@@ -1,5 +1,8 @@
 ---
-import { skillGroups } from '../data/skills';
+import { skillGroups, type SkillGroup } from '../data/skills';
+import { getMergedSkillGroups } from '../lib/site-data';
+
+const groups: SkillGroup[] = getMergedSkillGroups();
 
 const groupAccent: Record<string, string> = {
   ai: 'text-(--color-accent-2)',
@@ -16,8 +19,8 @@ const groupBorder: Record<string, string> = {
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
   {
-    skillGroups.map((group) => (
-      <section class="rounded-xl border border-(--color-border) bg-(--color-panel) p-5">
+    groups.map((group) => (
+      <section class="rounded-xl border border-(--color-border) bg-(--color-panel) p-5 shadow-sm">
         <h3 class:list={['font-mono text-sm font-semibold', groupAccent[group.id]]}>
           <span class="font-serif text-base">「</span>
           {group.title}

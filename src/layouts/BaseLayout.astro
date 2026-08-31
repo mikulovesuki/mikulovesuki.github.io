@@ -19,9 +19,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://mikulovesuk
 ---
 
 <!doctype html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <!-- 主题引导：避免刷新闪烁（存储偏好 → 系统偏好） -->
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('oblivion-theme');
+          var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
@@ -39,7 +49,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://mikulovesuk
     <meta property="og:site_name" content={SITE.title} />
     <meta property="og:locale" content="zh_CN" />
 
-    <meta name="theme-color" content="#0a0e14" />
+    <meta name="theme-color" content="#f6f8fb" />
   </head>
   <body class="min-h-screen flex flex-col">
     <Navbar />

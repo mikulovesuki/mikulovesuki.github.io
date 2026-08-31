@@ -20,31 +20,53 @@ export interface GithubUser {
   bio: string | null;
 }
 
-const HEADERS = {
-  'User-Agent': 'oblivion-personal-site',
-  Accept: 'application/vnd.github+json',
-};
-
 const BASE = 'https://api.github.com/users/mikulovesuki';
 
-export async function fetchUser(): Promise<GithubUser | null> {
+/**
+ * GitHub Actions 与本地 .env（可选）均可提供 GITHUB_TOKEN：
+ * 有 token 时匿名限流 60 次/小时 → 5000 次/小时，
+ * 避免构建时因限流静默降级为旧数据（网站与 GitHub 不同步的根因）。
+ */
+function headers() {
+  const token = process.env.GITHUB_TOKEN || '';
+  const h: Record<string, string> = {
+    'User-Agent': 'oblivion-personal-site',
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (token) h.Authorization = `Bearer ${token}`;
+  return h;
+}
+
+/** GET + 限流/5xx 时小退避重试 1 次，仍失败返回 null（页面降级为内置数据） */
+async function apiGet(url: string): Promise<unknown | null> {
   try {
-    const res = await fetch(BASE, { headers: HEADERS });
+    let res = await fetch(url, { headers: headers() });
+    if (!res.ok && (res.status === 429 || res.status >= 500)) {
+      await new Promise((r) => setTimeout(r, 2500));
+      res = await fetch(url, { headers: headers() });
+    }
     if (!res.ok) return null;
-    return (await res.json()) as GithubUser;
+    return await res.json();
   } catch {
     return null;
   }
 }
 
+export async function fetchUser(): Promise<GithubUser | null> {
+  const data = await apiGet(BASE);
+  return (data as GithubUser | null) ?? null;
+}
+
 export async function fetchRepos(): Promise<GithubRepo[] | null> {
-  try {
-    const res = await fetch(`${BASE}/repos?per_page=100&sort=pushed`, { headers: HEADERS });
-    if (!res.ok) return null;
-    return (await res.json()) as GithubRepo[];
-  } catch {
-    return null;
-  }
+  const data = await apiGet(`${BASE}/repos?per_page=100&sort=pushed`);
+  return Array.isArray(data) ? (data as GithubRepo[]) : null;
+}
+
+/** 并发获取用户信息与仓库列表（两个请求并行，各失败互不影响） */
+export async function fetchAll(): Promise<{ user: GithubUser | null; repos: GithubRepo[] | null }> {
+  const [user, repos] = await Promise.all([fetchUser(), fetchRepos()]);
+  return { user, repos };
 }
 
 /** 原创仓库（排除 fork） */

@@ -13,7 +13,7 @@ const fmt = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', d
   <div class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
     <header class="mb-12">
       <p class="font-mono text-xs text-(--color-accent)">## blog</p>
-      <h1 class="mt-2 font-serif text-3xl font-bold text-white">博客</h1>
+      <h1 class="mt-2 font-serif text-3xl font-bold text-(--color-ink)">博客</h1>
       <p class="mt-3 text-sm leading-6 text-(--color-ink-dim)">
         记录项目的设计决策、数值算法的实现细节与学习过程。
       </p>
@@ -25,7 +25,7 @@ const fmt = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', d
     <div class="space-y-6">
       {
         posts.map((post) => (
-          <article class="group rounded-xl border border-(--color-border) bg-(--color-panel) p-6 transition-all hover:-translate-y-0.5 hover:border-(--color-accent)/50">
+          <article class="group rounded-xl border border-(--color-border) bg-(--color-panel) p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-(--color-accent)/50 hover:shadow-md">
             <a href={`/blog/${post.id}/`} class="block">
               <p class="font-mono text-xs text-(--color-ink-faint)">
                 {fmt.format(post.data.pubDate)}

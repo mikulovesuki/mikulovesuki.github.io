@@ -1,5 +1,7 @@
 ---
-import { timeline, type TimelineItem } from '../data/timeline';
+import { getMergedTimeline, type TimelineItem } from '../lib/site-data';
+
+const timeline: TimelineItem[] = getMergedTimeline();
 
 const tagColor: Record<string, string> = {
   learning: 'border-(--color-accent-3)/40 text-(--color-accent-3)',
@@ -41,7 +43,7 @@ const tagLabel: Record<string, string> = {
         {
           item.repos && item.repos.length > 0 && (
             <p class="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-(--color-ink-faint)">
-              {item.repos.map((r) => (
+              {(item.repos ?? []).map((r: string) => (
                 <a
                   href={`https://github.com/mikulovesuki/${r}`}
                   target="_blank"

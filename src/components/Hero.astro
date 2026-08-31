@@ -1,98 +1,46 @@
 ---
-import katex from 'katex';
-
-// 构建时渲染 KaTeX（零客户端 JS）
-const formulas = [
-  katex.renderToString('A = Q \\Lambda Q^{\\mathsf{T}}', { throwOnError: false }),
-  katex.renderToString('e^{i\\pi} + 1 = 0', { throwOnError: false }),
-  katex.renderToString('\\int_a^b f(x)\\,dx \\approx \\tfrac{h}{3}\\big(y_0 + 4y_1 + 2y_2 + \\cdots \\big)', {
-    throwOnError: false,
-  }),
-  katex.renderToString('\\lambda_1 \\ge \\lambda_2 \\ge \\cdots \\ge \\lambda_n', { throwOnError: false }),
-  katex.renderToString('E = \\int_0^T |P(t)|\\,dt', { throwOnError: false }),
-  katex.renderToString('\\lim_{n \\to \\infty} A^n \\mathbf{x}', { throwOnError: false }),
-];
-
-const positions = [
-  'top-[12%] left-[4%]',
-  'top-[28%] right-[8%]',
-  'top-[55%] left-[10%]',
-  'top-[70%] right-[5%]',
-  'top-[42%] left-[42%]',
-  'top-[85%] left-[58%]',
-];
-
 // 打字机文案由下方 <script> 提供
 ---
 
 <section class="relative overflow-hidden border-b border-(--color-border)">
-  <!-- 漂浮公式背景 -->
-  <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-[0.12]">
-    {
-      formulas.map((f, i) => (
-        <span
-          class:list={['formula-float absolute font-serif text-lg text-(--color-accent-2)', positions[i]]}
-          style={`animation-delay: ${i * 1.2}s`}
-          set:html={f}
-        />
-      ))
-    }
-  </div>
+  <!-- 天空 + 日光 + 草地（纯 CSS，仿动漫风 banner） -->
+  <div aria-hidden="true" class="hero-sky absolute inset-0"></div>
+  <div aria-hidden="true" class="hero-field absolute inset-x-0 bottom-0 h-[26%]"></div>
 
-  <div class="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
-    <!-- 终端窗口 -->
-    <div class="fade-up mx-auto max-w-2xl overflow-hidden rounded-xl border border-(--color-border) bg-(--color-code-bg) shadow-2xl shadow-black/40">
-      <div class="flex items-center gap-2 border-b border-(--color-border) bg-(--color-panel) px-4 py-2.5">
-        <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
-        <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
-        <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
-        <span class="ml-3 font-mono text-xs text-(--color-ink-faint)">oblivion@local — zsh</span>
-      </div>
-      <div class="min-h-[16rem] p-5 font-mono text-sm leading-7 sm:text-[15px]">
-        <p class="text-(--color-ink-dim)"><span class="text-(--color-accent)">$</span> whoami</p>
-        <p class="text-(--color-ink)">oblivion</p>
+  <!-- 缓慢漂移的云 -->
+  <div aria-hidden="true" class="hero-cloud" style="top: 14%; left: -220px; width: 320px; height: 64px; animation-duration: 75s;"></div>
+  <div aria-hidden="true" class="hero-cloud" style="top: 26%; left: -340px; width: 440px; height: 80px; animation-duration: 95s; animation-delay: -30s;"></div>
+  <div aria-hidden="true" class="hero-cloud" style="top: 8%; left: -260px; width: 260px; height: 52px; animation-duration: 65s; animation-delay: -12s;"></div>
+  <div aria-hidden="true" class="hero-cloud" style="top: 38%; left: -300px; width: 300px; height: 56px; animation-duration: 85s; animation-delay: -55s; opacity: 0.8;"></div>
 
-        <p class="mt-3 text-(--color-ink-dim)"><span class="text-(--color-accent)">$</span> cat about.txt</p>
-        <p class="text-(--color-accent-2)">
-          <span id="typing-text"></span><span class="typing-cursor text-(--color-accent)">▍</span>
-        </p>
+  <div class="relative mx-auto flex min-h-[540px] max-w-5xl flex-col items-center justify-center px-4 text-center sm:min-h-[600px]">
+    <h1 class="hero-title fade-up text-4xl font-semibold tracking-wide text-white sm:text-5xl">
+      oblivion
+    </h1>
 
-        <p class="mt-3 text-(--color-ink-dim)"><span class="text-(--color-accent)">$</span> ls ~/projects</p>
-        <p class="grid grid-cols-1 gap-x-6 text-(--color-ink) sm:grid-cols-2">
-          <span><span class="text-(--color-accent-3)">ai/</span> mimo-vision-mcp</span>
-          <span><span class="text-(--color-accent-3)">ai/</span> intelligent-travel-assistant</span>
-          <span><span class="text-(--color-accent-3)">ai/</span> math-rag-assistant</span>
-          <span><span class="text-(--color-accent-3)">num/</span> matrix-eigenvalue-methods</span>
-          <span><span class="text-(--color-accent-3)">num/</span> robot-arm-energy-analysis</span>
-          <span class="text-(--color-ink-faint)"><span class="text-(--color-accent-3)">…</span> more</span>
-        </p>
-
-        <p class="mt-3 text-(--color-ink-dim)">
-          <span class="text-(--color-accent)">$</span>
-          <span class="typing-cursor text-(--color-accent)">▍</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- CTA -->
-    <div class="fade-up mt-10 flex flex-wrap items-center justify-center gap-4" style="animation-delay: 0.3s">
-      <a
-        href="/projects/"
-        class="rounded-lg bg-(--color-accent) px-5 py-2.5 text-sm font-semibold text-(--color-bg) transition-transform hover:scale-105"
-      >
-        查看项目 →
-      </a>
-      <a
-        href="/blog/"
-        class="rounded-lg border border-(--color-border) px-5 py-2.5 text-sm text-(--color-ink-dim) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)"
-      >
-        阅读博客
-      </a>
-    </div>
-
-    <p class="mt-12 text-center font-serif text-lg italic text-(--color-ink-dim)">
-      “<span class="text-(--color-accent)">从公式到工程</span>”——把数学推演变成能跑起来的系统
+    <p class="hero-sub fade-up mt-4 font-mono text-sm text-white/95 sm:text-base" style="animation-delay: 0.15s">
+      <span id="typing-text"></span><span class="typing-cursor">▍</span>
     </p>
+
+    <a
+      href="https://github.com/mikulovesuki"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="GitHub"
+      class="fade-up mt-8 flex h-11 w-11 items-center justify-center rounded-full bg-white/25 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
+      style="animation-delay: 0.3s"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.73.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.2.67.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+      </svg>
+    </a>
+
+    <!-- 下拉提示 -->
+    <div aria-hidden="true" class="chevron-down absolute bottom-5 text-white/90">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </div>
   </div>
 </section>
 

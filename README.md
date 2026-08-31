@@ -13,10 +13,11 @@
 
 | 路径 | 说明 |
 | --- | --- |
-| `/` | 首页：终端 Hero、精选项目、技能云、成长轨迹 |
+| `/` | 首页：终端 Hero、精选项目、自由卡片、技能云、成长轨迹 |
 | `/projects/` | 全部原创项目（GitHub API 动态数据 + 手写中文介绍） |
 | `/blog/` | 技术博客（MDX + KaTeX 公式 + RSS） |
-| `/about/` | 关于我：经历、技能、联系方式 |
+| `/about/` | 自我介绍：内容在 `src/data/profile.ts` 中填写 |
+| `/admin/` | 站点管理后台（仅本地开发可用，见下） |
 | `/rss.xml` | RSS 订阅 |
 
 ## 本地开发
@@ -36,7 +37,9 @@ npm run build      # 生产构建 → dist/
 npm run preview    # 预览构建产物
 ```
 
-## 部署（GitHub Pages）
+## 部署与自动同步（GitHub Pages）
+
+### 部署（GitHub Actions，push 即发布）
 
 1. 在 GitHub 创建名为 `mikulovesuki.github.io` 的仓库（必须是你的主页仓库，大小写不敏感）
 2. 仓库 Settings → Pages → Source 选择 **GitHub Actions**
@@ -49,13 +52,43 @@ npm run preview    # 预览构建产物
 - 新增 `base: '/profile'`
 - 仓库 Settings → Pages → Source 选择 **GitHub Actions**
 
+### 「GitHub 发布自动同步到网站」的原理
+
+```
+你在 GitHub 上 push（或在本地后台点「发布到线上」）
+   → GitHub Actions 自动构建
+       → 构建时用 GITHUB_TOKEN（Actions 自动注入，限流 5000/小时）拉取你的仓库 / star 数据
+       → 合并管理后台数据 src/data/site-data.json
+   → 部署到 GitHub Pages，约 1–2 分钟后全站更新
+```
+
+- 新仓库、star 数、更新时间都会随每次 push 自动更新到网站
+- 构建失败（如 GitHub API 临时不可用）时自动降级为内置数据，页面始终可用
+- 本地 `npm run dev` 时也建议在 `.env` 配置 `GITHUB_TOKEN` 拉取自己的数据（可选）：
+
 ## 内容维护
 
 - **项目数据**：`src/data/projects.ts`（精选项目的中文介绍、技术标签、量化成果）
 - **次要仓库说明**：`src/data/repoNotes.ts`
+- **自我介绍**：`src/data/profile.ts`（自我介绍正文，直接编辑该文件）
 - **博客文章**：`src/content/blog/*.mdx`（frontmatter 含 title / description / pubDate / tags）
 - **技能与时间线**：`src/data/skills.ts`、`src/data/timeline.ts`
 - **站点全局信息**：`src/config.ts`（站点名、简介、联系方式）
+
+## 站点管理后台（拖拽编辑卡片）
+
+打开 `http://localhost:4321/admin`（页脚有「⚙ 管理」入口），输入管理密码即可可视化编辑全站卡片：
+
+- **自由卡片区**：首页与自我介绍页的卡片，可任意添加 / 编辑 / 删除 / 拖拽排序
+- **精选项目 / 技能组 / 时间线**：同样支持编辑与拖拽排序
+
+工作方式（前后端同步）：
+
+1. **密码**：默认为 `111`，建议在 `.env` 中设置 `ADMIN_TOKEN` 覆盖（`cp .env.example .env` 后修改，重启 dev server 生效）
+2. **保存**：编辑后点「保存」（或 Ctrl+S），数据写入 `src/data/site-data.json`，本地页面立即生效
+3. **发布**：点「发布到线上」自动执行 git 提交并推送（需先配置 git 远程仓库），GitHub Actions 重新构建后所有访客可见——**与直接 push 同等效果**
+
+> 注意：管理后台仅在本地开发模式（`start.bat` / `npm run dev`）可用；线上静态页面不含管理接口。
 
 ## 致谢
 

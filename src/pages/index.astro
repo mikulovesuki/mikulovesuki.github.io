@@ -5,12 +5,12 @@ import ProjectCard from '../components/ProjectCard.astro';
 import SkillCloud from '../components/SkillCloud.astro';
 import Timeline from '../components/Timeline.astro';
 import GitHubStatsCard from '../components/GitHubStatsCard.astro';
-import { projects } from '../data/projects';
-import { fetchUser, fetchRepos } from '../lib/github';
+import FreeCards from '../components/FreeCards.astro';
+import { getMergedProjects, getMergedFreeCards } from '../lib/site-data';
+import { fetchAll } from '../lib/github';
 
 // 构建时同步 GitHub 数据（失败时降级为 null，页面仍可用）
-const user = await fetchUser();
-const repos = await fetchRepos();
+const { user, repos } = await fetchAll();
 const repoStats = new Map((repos ?? []).map((r) => [r.name, r]));
 
 const starOf = (name: string) => repoStats.get(name)?.stargazers_count ?? 0;
@@ -20,8 +20,11 @@ const updatedOf = (name: string) => {
   return pushed.slice(0, 10); // YYYY-MM-DD
 };
 
-const featured = projects.filter((p) => p.featured);
-const others = projects.filter((p) => !p.featured);
+// 项目数据 = 默认数据 + 管理后台编辑数据（site-data.json）
+const mergedProjects = getMergedProjects();
+const featured = mergedProjects.filter((p) => p.featured);
+const others = mergedProjects.filter((p) => !p.featured);
+const freeCards = getMergedFreeCards();
 ---
 
 <BaseLayout>
@@ -32,7 +35,7 @@ const others = projects.filter((p) => !p.featured);
     <div class="mb-8 flex items-end justify-between">
       <div>
         <p class="font-mono text-xs text-(--color-accent)">## 精选项目</p>
-        <h2 class="mt-2 font-serif text-2xl font-bold text-white">
+        <h2 class="mt-2 font-serif text-2xl font-bold text-(--color-ink)">
           做了些什么 <span class="text-(--color-ink-faint)">—</span> 有量化验证、有测试、有文档
         </h2>
       </div>
@@ -53,6 +56,19 @@ const others = projects.filter((p) => !p.featured);
     </div>
   </section>
 
+  <!-- 自由卡片区（管理后台可编辑） -->
+  <section class="border-t border-(--color-border)">
+    <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+      <div class="mb-8">
+        <p class="font-mono text-xs text-(--color-accent)">## note cards</p>
+        <h2 class="mt-2 font-serif text-2xl font-bold text-(--color-ink)">
+          自由卡片 <span class="text-(--color-ink-faint)">—</span> 我随时更新的小卡片
+        </h2>
+      </div>
+      <FreeCards cards={freeCards} />
+    </div>
+  </section>
+
   <!-- GitHub 数据 -->
   <section class="border-y border-(--color-border) bg-(--color-bg-soft)">
     <div class="mx-auto max-w-5xl px-4 py-14 sm:px-6">
@@ -65,7 +81,7 @@ const others = projects.filter((p) => !p.featured);
   <section class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
     <div class="mb-8">
       <p class="font-mono text-xs text-(--color-accent)">## 技能栈</p>
-      <h2 class="mt-2 font-serif text-2xl font-bold text-white">
+      <h2 class="mt-2 font-serif text-2xl font-bold text-(--color-ink)">
         三条主线 <span class="text-(--color-ink-faint)">—</span> AI 应用 / 数值计算 / 学术工具链
       </h2>
     </div>
@@ -77,7 +93,7 @@ const others = projects.filter((p) => !p.featured);
     <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
       <div class="mb-8">
         <p class="font-mono text-xs text-(--color-accent)">## 成长轨迹</p>
-        <h2 class="mt-2 font-serif text-2xl font-bold text-white">
+        <h2 class="mt-2 font-serif text-2xl font-bold text-(--color-ink)">
           一年半，从 LaTeX 到 MCP
         </h2>
       </div>
