@@ -5,8 +5,8 @@ import ProjectCard from '../components/ProjectCard.astro';
 import SkillCloud from '../components/SkillCloud.astro';
 import Timeline from '../components/Timeline.astro';
 import GitHubStatsCard from '../components/GitHubStatsCard.astro';
-import FreeCards from '../components/FreeCards.astro';
-import { getMergedProjects, getMergedFreeCards } from '../lib/site-data';
+import { getMergedProjects } from '../lib/site-data';
+import GitHubActivity from '../components/GitHubActivity.astro';
 import { fetchAll } from '../lib/github';
 
 // 构建时同步 GitHub 数据（失败时降级为 null，页面仍可用）
@@ -24,7 +24,6 @@ const updatedOf = (name: string) => {
 const mergedProjects = getMergedProjects();
 const featured = mergedProjects.filter((p) => p.featured);
 const others = mergedProjects.filter((p) => !p.featured);
-const freeCards = getMergedFreeCards();
 ---
 
 <BaseLayout>
@@ -56,16 +55,16 @@ const freeCards = getMergedFreeCards();
     </div>
   </section>
 
-  <!-- 自由卡片区（管理后台可编辑） -->
+  <!-- 每日动态（GitHub 最新活动，构建时同步） -->
   <section class="border-t border-(--color-border)">
     <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
       <div class="mb-8">
-        <p class="font-mono text-xs text-(--color-accent)">## note cards</p>
+        <p class="font-mono text-xs text-(--color-accent)">## daily activity</p>
         <h2 class="mt-2 font-serif text-2xl font-bold text-(--color-ink)">
-          自由卡片 <span class="text-(--color-ink-faint)">—</span> 我随时更新的小卡片
+          每日动态 <span class="text-(--color-ink-faint)">—</span> 我的 GitHub 刚刚在做什么
         </h2>
       </div>
-      <FreeCards cards={freeCards} />
+      <GitHubActivity />
     </div>
   </section>
 

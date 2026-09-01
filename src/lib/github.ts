@@ -20,6 +20,25 @@ export interface GithubUser {
   bio: string | null;
 }
 
+/** GitHub Events API 事件（只取需要用到的字段） */
+export interface GithubEvent {
+  id: string;
+  type: string;
+  repo: { name: string };
+  created_at: string;
+  payload: {
+    action?: string;
+    ref?: string;
+    ref_type?: string;
+    head?: string;
+    commits?: { message: string; sha: string }[];
+    forkee?: { full_name: string };
+    pull_request?: { title: string; number: number; html_url: string };
+    issue?: { title: string; number: number; html_url: string };
+    release?: { name: string; html_url: string };
+  };
+}
+
 const BASE = 'https://api.github.com/users/mikulovesuki';
 
 /**
@@ -67,6 +86,12 @@ export async function fetchRepos(): Promise<GithubRepo[] | null> {
 export async function fetchAll(): Promise<{ user: GithubUser | null; repos: GithubRepo[] | null }> {
   const [user, repos] = await Promise.all([fetchUser(), fetchRepos()]);
   return { user, repos };
+}
+
+/** 获取用户最近公开动态（push / star / PR / issue 等，最多 90 天） */
+export async function fetchEvents(): Promise<GithubEvent[] | null> {
+  const data = await apiGet(`${BASE}/events/public?per_page=10`);
+  return Array.isArray(data) ? (data as GithubEvent[]) : null;
 }
 
 /** 原创仓库（排除 fork） */

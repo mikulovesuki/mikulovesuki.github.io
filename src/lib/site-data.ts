@@ -12,15 +12,6 @@ import { timeline, type TimelineItem } from '../data/timeline';
 
 export type { TimelineItem };
 
-/** 自由卡片：管理员任意添加/编辑/排序的卡片 */
-export interface FreeCard {
-  id: string;
-  title: string;
-  body: string;
-  /** 可选链接 */
-  link?: string;
-}
-
 /** 单个精选项目的可覆盖字段 */
 export interface ProjectOverride {
   tagline?: string;
@@ -52,7 +43,6 @@ export interface TimelineOverride {
 
 /** site-data.json 的完整结构（所有字段可选，缺省回退默认值） */
 export interface SiteData {
-  free_cards?: FreeCard[];
   projects?: Record<string, ProjectOverride>;
   skills?: Record<string, SkillGroupOverride>;
   timeline?: TimelineOverride[];
@@ -72,20 +62,6 @@ export function loadSiteData(): SiteData {
     return {};
   }
 }
-
-/** 默认自由卡片（管理员未添加时展示，用于说明该区块的用途） */
-export const DEFAULT_FREE_CARDS: FreeCard[] = [
-  {
-    id: 'demo-1',
-    title: '这个区块可以自由编辑',
-    body: '打开网站右下角「⚙ 管理」，登录后就能在这里添加、编辑、拖拽排序任意卡片。点击保存后，再点「发布」，所有访客都能看到最新内容。',
-  },
-  {
-    id: 'demo-2',
-    title: '自由卡片区',
-    body: '想放什么都可以：近期动态、正在做的事、常用链接……每张卡片都支持标题、正文和可选链接。',
-  },
-];
 
 /** 合并后的精选项目（支持顺序调整） */
 export function getMergedProjects(): FeaturedProject[] {
@@ -136,10 +112,4 @@ export function getMergedTimeline(): TimelineItem[] {
     }));
   }
   return timeline.map((t) => ({ ...t }));
-}
-
-/** 合并后的自由卡片（管理员未添加时显示默认示例） */
-export function getMergedFreeCards(): FreeCard[] {
-  const sd = loadSiteData();
-  return sd.free_cards && sd.free_cards.length > 0 ? sd.free_cards : DEFAULT_FREE_CARDS;
 }

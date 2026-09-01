@@ -61,18 +61,6 @@ import '../styles/global.css';
       </header>
 
       <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <!-- 自由卡片 -->
-        <section class="mb-12">
-          <div class="mb-2 flex items-center justify-between">
-            <h2 class="font-mono text-sm font-semibold text-(--color-accent)">1 · 自由卡片区</h2>
-            <button id="btn-add-card" class="rounded-md border border-(--color-border) px-3 py-1.5 text-xs text-(--color-ink-dim) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)">
-              + 添加卡片
-            </button>
-          </div>
-          <p class="mb-3 text-xs text-(--color-ink-faint)">按住「⠿」手柄拖拽排序；标题、正文、链接直接输入即可。</p>
-          <div id="free-cards" class="space-y-3"></div>
-        </section>
-
         <!-- 精选项目 -->
         <section class="mb-12">
           <div class="mb-4">
@@ -119,7 +107,7 @@ import '../styles/global.css';
 
         let token = sessionStorage.getItem(TOKEN_KEY) || '';
         /** 当前编辑状态（与 API 返回的 merged 一致） */
-        let state = { free_cards: [], projects: [], skills: [], timeline: [] };
+        let state = { projects: [], skills: [], timeline: [] };
 
         const $ = (sel, root) => (root || document).querySelector(sel);
         const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
@@ -172,7 +160,6 @@ import '../styles/global.css';
 
         /* ---------- 渲染 ---------- */
         function renderAll() {
-          renderFreeCards();
           renderProjects();
           renderSkills();
           renderTimeline();
@@ -190,28 +177,6 @@ import '../styles/global.css';
             (extraHeader || '');
           li.appendChild(head);
           return li;
-        }
-
-        /* 自由卡片 */
-        function renderFreeCards() {
-          const box = document.getElementById('free-cards');
-          box.innerHTML = '';
-          state.free_cards.forEach((card, i) => {
-            const li = cardShell(card.id, card.title || '（无标题）',
-              `<button class="btn-del-card text-xs text-(--color-ink-faint) hover:text-red-400">删除</button>`);
-            const body = document.createElement('div');
-            body.className = 'space-y-2 px-4 pb-4';
-            body.innerHTML = `
-              <input class="f-title w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" placeholder="卡片标题" value="${esc(card.title)}" />
-              <textarea class="f-body w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" rows="3" placeholder="卡片内容（支持链接、说明等任意文字）">${esc(card.body)}</textarea>
-              <input class="f-link w-full rounded-md border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm outline-none focus:border-(--color-accent)" placeholder="可选链接（https://...）" value="${esc(card.link || '')}" />`;
-            li.appendChild(body);
-            box.appendChild(li);
-          });
-          wireDrag(box);
-          $$('.btn-del-card', box).forEach((btn, idx) => {
-            btn.addEventListener('click', () => { state.free_cards.splice(idx, 1); renderFreeCards(); markDirty(); });
-          });
         }
 
         /* 精选项目 */
@@ -327,12 +292,6 @@ import '../styles/global.css';
 
         /* ---------- 收集与保存 ---------- */
         function collect() {
-          const free = $$('#free-cards > div').map((li) => ({
-            id: li.dataset.id,
-            title: $('.f-title', li).value.trim(),
-            body: $('.f-body', li).value.trim(),
-            link: $('.f-link', li).value.trim() || undefined,
-          }));
           const proj = $$('#projects > div').map((li) => ({
             repo: li.dataset.id,
             tagline: $('.p-tagline', li).value.trim(),
@@ -355,12 +314,11 @@ import '../styles/global.css';
             tag: $('.t-tag', li).value,
             repos: $('.t-repos', li).value.split(',').map((s) => s.trim()).filter(Boolean),
           }));
-          return { free_cards: free, projects: proj, skills, timeline: tl };
+          return { projects: proj, skills, timeline: tl };
         }
 
         function toOverrides(m) {
           return {
-            free_cards: m.free_cards,
             projects: Object.fromEntries(m.projects.map((p, i) => [
               p.repo,
               { tagline: p.tagline, description: p.description, highlights: p.highlights, tech: p.tech, featured: p.featured, period: p.period, order: i },
@@ -440,11 +398,6 @@ import '../styles/global.css';
         });
 
         /* 添加/删除 */
-        document.getElementById('btn-add-card').addEventListener('click', () => {
-          state.free_cards.push({ id: 'c' + Date.now().toString(36), title: '', body: '', link: '' });
-          renderFreeCards();
-          markDirty();
-        });
         document.getElementById('btn-add-timeline').addEventListener('click', () => {
           state.timeline.push({ period: '', title: '', description: '', tag: 'project', repos: [] });
           renderTimeline();
