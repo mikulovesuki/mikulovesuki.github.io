@@ -9,8 +9,8 @@ export const SITE = {
     'oblivion 的个人网站：AI 应用开发（MCP / RAG / 多 Agent）与数值计算方向的学习与实践记录。',
   /** GitHub 主页 */
   github: 'https://github.com/mikulovesuki',
-  /** 联系方式（TODO: 待用户确认） */
-  email: '',
+  /** 联系方式（联系我：mailto 链接） */
+  email: '1029051655@qq.com',
   /** 站点路径前缀（GitHub Pages 项目页部署时使用，用户主页仓库则留空） */
   base: '',
 };
