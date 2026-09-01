@@ -13,7 +13,6 @@ import { loadEnv } from 'vite';
 import { timingSafeEqual } from 'node:crypto';
 import {
   loadSiteData,
-  getMergedFreeCards,
   getMergedProjects,
   getMergedSkillGroups,
   getMergedTimeline,
@@ -71,7 +70,6 @@ function localAdminApi() {
             sendJson(res, 200, {
               overrides: loadSiteData(),
               merged: {
-                free_cards: getMergedFreeCards(),
                 projects: getMergedProjects(),
                 skills: getMergedSkillGroups(),
                 timeline: getMergedTimeline(),

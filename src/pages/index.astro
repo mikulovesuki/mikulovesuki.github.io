@@ -5,8 +5,8 @@ import ProjectCard from '../components/ProjectCard.astro';
 import SkillCloud from '../components/SkillCloud.astro';
 import Timeline from '../components/Timeline.astro';
 import GitHubStatsCard from '../components/GitHubStatsCard.astro';
+import RecentActivity from '../components/RecentActivity.astro';
 import { getMergedProjects } from '../lib/site-data';
-import GitHubActivity from '../components/GitHubActivity.astro';
 import { fetchAll } from '../lib/github';
 
 // 构建时同步 GitHub 数据（失败时降级为 null，页面仍可用）
@@ -55,18 +55,8 @@ const others = mergedProjects.filter((p) => !p.featured);
     </div>
   </section>
 
-  <!-- 每日动态（GitHub 最新活动，构建时同步） -->
-  <section class="border-t border-(--color-border)">
-    <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-      <div class="mb-8">
-        <p class="font-mono text-xs text-(--color-accent)">## daily activity</p>
-        <h2 class="mt-2 font-serif text-2xl font-bold text-(--color-ink)">
-          每日动态 <span class="text-(--color-ink-faint)">—</span> 我的 GitHub 刚刚在做什么
-        </h2>
-      </div>
-      <GitHubActivity />
-    </div>
-  </section>
+  <!-- 每日动态：GitHub 最新活动（构建时同步） -->
+  <RecentActivity />
 
   <!-- GitHub 数据 -->
   <section class="border-y border-(--color-border) bg-(--color-bg-soft)">

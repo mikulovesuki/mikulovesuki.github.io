@@ -20,22 +20,24 @@ export interface GithubUser {
   bio: string | null;
 }
 
-/** GitHub Events API 事件（只取需要用到的字段） */
+/** 用户公开活动事件（每日动态数据源） */
 export interface GithubEvent {
   id: string;
   type: string;
-  repo: { name: string };
+  public: boolean;
+  repo: { id: number; name: string; url: string };
+  actor: { login: string };
   created_at: string;
   payload: {
     action?: string;
     ref?: string;
     ref_type?: string;
-    head?: string;
-    commits?: { message: string; sha: string }[];
-    forkee?: { full_name: string };
-    pull_request?: { title: string; number: number; html_url: string };
-    issue?: { title: string; number: number; html_url: string };
-    release?: { name: string; html_url: string };
+    size?: number;
+    commits?: { message?: string }[];
+    issue?: { title?: string };
+    pull_request?: { title?: string; merged?: boolean };
+    release?: { tag_name?: string };
+    forkee?: { full_name?: string };
   };
 }
 
@@ -88,10 +90,11 @@ export async function fetchAll(): Promise<{ user: GithubUser | null; repos: Gith
   return { user, repos };
 }
 
-/** 获取用户最近公开动态（push / star / PR / issue 等，最多 90 天） */
-export async function fetchEvents(): Promise<GithubEvent[] | null> {
-  const data = await apiGet(`${BASE}/events/public?per_page=10`);
-  return Array.isArray(data) ? (data as GithubEvent[]) : null;
+/** 获取最近公开活动事件（每日动态）；失败返回 null */
+export async function fetchRecentEvents(): Promise<GithubEvent[] | null> {
+  const data = await apiGet(`${BASE}/events`);
+  if (!Array.isArray(data)) return null;
+  return (data as GithubEvent[]).filter((e) => e.public !== false);
 }
 
 /** 原创仓库（排除 fork） */

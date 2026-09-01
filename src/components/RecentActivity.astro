@@ -1,0 +1,144 @@
+---
+import { fetchRecentEvents, type GithubEvent } from '../lib/github';
+import { SITE } from '../config';
+
+const events = await fetchRecentEvents();
+
+/** 相对时间：刚刚 / X 分钟前 / X 小时前 / X 天前 / M月D日 */
+function formatTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).valueOf();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '刚刚';
+  if (min < 60) return `${min} 分钟前`;
+  const hrs = Math.floor(min / 60);
+  if (hrs < 24) return `${hrs} 小时前`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days} 天前`;
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+/** 去掉仓库名的用户名前缀 */
+const repoOf = (e: GithubEvent) => e.repo.name.replace(/^mikulovesuki\//, '');
+
+const firstLine = (s?: string) => (s ?? '').split('\n')[0].trim();
+
+/** 事件 → 一句话描述 */
+function describe(e: GithubEvent): { text: string; title?: string } {
+  const repo = repoOf(e);
+  const p = e.payload;
+  switch (e.type) {
+    case 'PushEvent': {
+      const n = p.size ?? 1;
+      const msg = firstLine(p.commits?.[0]?.message);
+      const text = `推送了 ${n} 个 commit 到 ${repo}`;
+      return msg ? { text: `${text}：${msg.slice(0, 60)}${msg.length > 60 ? '…' : ''}`, title: msg } : { text, title: msg };
+    }
+    case 'CreateEvent': {
+      const ref = p.ref && p.ref_type !== 'repository' ? `（${p.ref}）` : '';
+      const label = p.ref_type === 'repository' ? '创建了仓库' : p.ref_type === 'tag' ? '创建了标签' : '创建了分支';
+      return { text: `${label} ${repo}${ref}` };
+    }
+    case 'DeleteEvent': {
+      const label = p.ref_type === 'tag' ? '删除了标签' : '删除了分支';
+      return { text: `${label} ${repo}（${p.ref ?? ''}）` };
+    }
+    case 'IssuesEvent': {
+      const act = p.action === 'closed' ? '关闭了 Issue' : p.action === 'reopened' ? '重开了 Issue' : '提出了 Issue';
+      return { text: `${act}「${p.issue?.title ?? ''}」于 ${repo}`, title: p.issue?.title };
+    }
+    case 'IssueCommentEvent':
+      return { text: `评论了 ${repo} 的 Issue「${p.issue?.title ?? ''}」`, title: p.issue?.title };
+    case 'PullRequestEvent': {
+      const merged = p.action === 'closed' && p.pull_request?.merged;
+      const act = merged ? '合并了 PR' : p.action === 'closed' ? '关闭了 PR' : '提交了 PR';
+      return { text: `${act}「${p.pull_request?.title ?? ''}」到 ${repo}`, title: p.pull_request?.title };
+    }
+    case 'ReleaseEvent':
+      return { text: `发布了 ${repo} 的新版本 ${p.release?.tag_name ?? ''}` };
+    case 'WatchEvent':
+      return { text: `Star 了 ${repo}（干得漂亮）` };
+    case 'ForkEvent':
+      return { text: `Fork 了 ${p.forkee?.full_name ?? repo}` };
+    case 'PublicEvent':
+      return { text: `把 ${repo} 转为公开仓库` };
+    case 'CommitCommentEvent':
+      return { text: `评论了 ${repo} 的 commit` };
+    case 'GollumEvent': {
+      const page = p.action === 'edited' ? '编辑了' : '更新了';
+      return { text: `${page} ${repo} 的 Wiki` };
+    }
+    default:
+      return { text: `在 ${repo} 有活动（${e.type}）` };
+  }
+}
+
+const list = (events ?? []).slice(0, 8);
+const empty = events !== null && list.length === 0;
+---
+
+<section class="border-t border-(--color-border)">
+  <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+    <header class="mb-8">
+      <p class="font-mono text-xs text-(--color-accent)">## daily activity</p>
+      <div class="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h2 class="font-serif text-2xl font-bold text-(--color-ink)">
+          每日动态 <span class="text-(--color-ink-faint)">—</span> 我在 GitHub 的今日痕迹
+        </h2>
+        <a
+          href={SITE.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-mono text-xs text-(--color-ink-faint) transition-colors hover:text-(--color-accent)"
+        >
+          github 主页 ↗
+        </a>
+      </div>
+      <p class="mt-2 text-xs text-(--color-ink-faint)">构建时从 GitHub Events API 同步，随每次发布自动更新。</p>
+    </header>
+
+    {
+      events === null ? (
+        <p class="rounded-xl border border-(--color-border) bg-(--color-panel) px-5 py-6 text-sm text-(--color-ink-dim)">
+          暂时没拉到 GitHub 动态，稍后再来看看～
+        </p>
+      ) : empty ? (
+        <p class="rounded-xl border border-(--color-border) bg-(--color-panel) px-5 py-6 text-sm text-(--color-ink-dim)">
+          最近没有公开动态。在你写代码前允许我躺平一下。
+        </p>
+      ) : (
+        <ul class="space-y-2.5">
+          {list.map((e) => {
+            const { text, title } = describe(e);
+            return (
+              <li>
+                <div class="group flex items-start gap-3 rounded-xl border border-(--color-border) bg-(--color-panel) px-4 py-3 shadow-sm transition-all hover:border-(--color-accent)/50 hover:shadow-md">
+                  <span
+                    class={`mt-1 flex-none rounded-sm ${e.type === 'PushEvent' ? 'bg-(--color-accent)' : 'bg-(--color-accent-2)'}`}
+                    style="width: 9px; height: 9px"
+                    aria-hidden="true"
+                  ></span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm leading-6 text-(--color-ink)">{text}</p>
+                    <a
+                      href={`https://github.com/${e.repo.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-0.5 inline-block font-mono text-xs text-(--color-accent) transition-opacity hover:opacity-75"
+                      title={title}
+                    >
+                      {repoOf(e)} ↗
+                    </a>
+                  </div>
+                  <time datetime={e.created_at} class="mt-1 flex-none font-mono text-[11px] text-(--color-ink-faint)">
+                    {formatTime(e.created_at)}
+                  </time>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+  </div>
+</section>
